@@ -1,0 +1,20 @@
+<%@ page contentType="text/html; charset=UTF-8" %>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manos a la Obra</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+  <div class="container py-5 text-center">
+    <h1 class="display-5 fw-bold">Manos a la Obra</h1>
+    <p class="lead">El profesional que necesitas, a una cuadra de distancia.</p>
+    <% if ("ok".equals(request.getParameter("registro"))) { %>
+      <div class="alert alert-success">¡Cuenta creada! Ya puedes iniciar sesión.</div>
+    <% } %>
+    <a class="btn btn-primary btn-lg" href="registro">Crear mi cuenta</a>
+  </div>
+</body>
+</html>
