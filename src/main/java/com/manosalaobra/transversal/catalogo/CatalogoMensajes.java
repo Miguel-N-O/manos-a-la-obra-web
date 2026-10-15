@@ -138,6 +138,10 @@ public final class CatalogoMensajes {
         public static final String USUARIO_ERROR_ESTADO_NO_CONFIGURADO =
                 "No pudimos crear tu cuenta porque falta configurar los estados de cuenta. Avisa al administrador.";
 
+        public static final String USUARIO_ERROR_DATOS_INICIO_SESION_FALTANTES =
+                "Escribe tu correo y tu contraseña.";
+        public static final String USUARIO_ERROR_CREDENCIALES_INCORRECTAS = "Correo o contraseña incorrectos.";
+
         private UsuarioNegocioImpl() {
         }
     }
@@ -145,6 +149,9 @@ public final class CatalogoMensajes {
     public static final class UsuarioFachadaImpl {
         public static final String USUARIO_ERROR_PROBLEMA_INESPERADO_REGISTRANDO_CIUDADANO =
                 "No pudimos crear tu cuenta. Intenta de nuevo en unos minutos.";
+
+        public static final String USUARIO_ERROR_PROBLEMA_INESPERADO_INICIANDO_SESION =
+                "No pudimos iniciar tu sesión. Intenta de nuevo en unos minutos.";
 
         private UsuarioFachadaImpl() {
         }
@@ -166,6 +173,15 @@ public final class CatalogoMensajes {
         public static final String USUARIO_CIUDADANO_REGISTRADO = "¡Cuenta creada! Ya puedes iniciar sesión.";
 
         private UsuarioController() {
+        }
+    }
+
+    public static final class SesionController {
+        public static final String USUARIO_SESION_INICIADA = "¡Bienvenido de nuevo!";
+        public static final String USUARIO_SESION_CERRADA = "Cerraste sesión.";
+        public static final String USUARIO_ERROR_NO_HAY_SESION = "Inicia sesión para continuar.";
+
+        private SesionController() {
         }
     }
 }

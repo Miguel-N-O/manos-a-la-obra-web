@@ -53,6 +53,24 @@ public final class UsuarioFachadaImpl implements UsuarioFachada {
         }
     }
 
+    @Override
+    public UsuarioDTO iniciarSesion(UsuarioDTO credenciales) {
+        try {
+            UsuarioDominio credencialesDominio = UsuarioEnsambladorDTO.getInstancia().convertirADominio(credenciales);
+            UsuarioDominio usuarioAutenticado = usuarioNegocio.iniciarSesion(credencialesDominio);
+            return UsuarioEnsambladorDTO.getInstancia().convertirADTO(usuarioAutenticado);
+        } catch (ManosALaObraExcepcion excepcion) {
+            throw excepcion;
+        } catch (Exception excepcion) {
+            REGISTRO.error("Problema inesperado iniciando sesión", excepcion);
+            throw ManosALaObraFachadaExcepcion.crear(
+                    CatalogoMensajes.UsuarioFachadaImpl.USUARIO_ERROR_PROBLEMA_INESPERADO_INICIANDO_SESION,
+                    excepcion.getMessage(), excepcion);
+        } finally {
+            daoFactory.cerrarConexion();
+        }
+    }
+
     private void cancelarSiHaceFalta(boolean transaccionIniciada) {
         if (transaccionIniciada) {
             daoFactory.cancelarTransaccion();
