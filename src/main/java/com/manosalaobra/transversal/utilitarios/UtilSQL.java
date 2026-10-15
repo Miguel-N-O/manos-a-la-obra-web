@@ -87,7 +87,9 @@ public final class UtilSQL {
     }
 
     public static void cerrarConexion(Connection conexion) {
-        asegurarConexionAbierta(conexion);
+        if (!conexionEstaAbierta(conexion)) {
+            return;
+        }
         try {
             conexion.close();
         } catch (SQLException excepcion) {

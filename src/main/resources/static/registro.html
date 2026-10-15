@@ -15,8 +15,15 @@
         <input id="nombre" name="nombre" class="form-control form-control-lg" required></div>
       <div class="mb-3"><label class="form-label" for="correo">Correo</label>
         <input id="correo" name="correo" type="email" class="form-control form-control-lg" required></div>
-      <div class="mb-3"><label class="form-label" for="telefono">Teléfono</label>
-        <input id="telefono" name="telefono" class="form-control form-control-lg"></div>
+      <div class="mb-3"><label class="form-label" for="numeroTelefono">Teléfono</label>
+        <div class="input-group input-group-lg">
+          <select id="indicativoPais" name="indicativoPais" class="form-select" style="max-width:45%" required>
+            <option value="">Indicativo</option>
+          </select>
+          <input id="numeroTelefono" name="numeroTelefono" type="tel" inputmode="numeric" maxlength="14"
+                 class="form-control" placeholder="3001234567" required>
+        </div>
+        <div class="form-text">Solo números, entre 7 y 14 dígitos, sin el indicativo.</div></div>
       <div class="mb-3"><label class="form-label" for="clave">Contraseña (mínimo 8 caracteres)</label>
         <input id="clave" name="clave" type="password" class="form-control form-control-lg" required></div>
       <button id="botonRegistrar" class="btn btn-primary btn-lg w-100">Registrarme</button>

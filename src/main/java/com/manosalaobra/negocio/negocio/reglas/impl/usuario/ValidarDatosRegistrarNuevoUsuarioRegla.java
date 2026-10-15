@@ -6,7 +6,8 @@ import com.manosalaobra.transversal.catalogo.CatalogoMensajes;
 import com.manosalaobra.transversal.excepciones.ManosALaObraNegocioExcepcion;
 import com.manosalaobra.transversal.utilitarios.UtilObjeto;
 import com.manosalaobra.transversal.utilitarios.UtilTexto;
-
+import com.manosalaobra.transversal.utilitarios.UtilUUID;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,7 +18,9 @@ public final class ValidarDatosRegistrarNuevoUsuarioRegla implements Regla<Usuar
     private static final int LONGITUD_MAXIMA_NOMBRE = 100;
     private static final int LONGITUD_MAXIMA_CORREO = 150;
     private static final int LONGITUD_MINIMA_CLAVE = 8;
-    private static final int LONGITUD_MAXIMA_TELEFONO = 20;
+    private static final int LONGITUD_MAXIMA_CLAVE_EN_BYTES = 72;
+    private static final int LONGITUD_MINIMA_NUMERO_TELEFONO = 7;
+    private static final int LONGITUD_MAXIMA_NUMERO_TELEFONO = 14;
 
     private ValidarDatosRegistrarNuevoUsuarioRegla() {
     }
@@ -31,12 +34,11 @@ public final class ValidarDatosRegistrarNuevoUsuarioRegla implements Regla<Usuar
     public final void ejecutar(UsuarioDominio... datos) {
         UsuarioDominio usuario = UtilObjeto.obtenerValorDefectoSiValorOriginalEsNulo(
                 datos.length > 0 ? datos[0] : null, new UsuarioDominio.Builder().build());
-
         asegurarQueNoFaltenCampos(usuario);
         asegurarNombreValido(usuario.getNombre());
         asegurarCorreoValido(usuario.getCorreo());
         asegurarClaveValida(usuario.getClave());
-        asegurarTelefonoValido(usuario.getTelefono());
+        asegurarNumeroTelefonoValido(usuario.getNumeroTelefono());
     }
 
     private void asegurarQueNoFaltenCampos(UsuarioDominio usuario) {
@@ -50,6 +52,12 @@ public final class ValidarDatosRegistrarNuevoUsuarioRegla implements Regla<Usuar
         }
         if (utilTexto.esVacia(usuario.getClave())) {
             faltantes.add(CatalogoMensajes.UsuarioNegocioImpl.USUARIO_ERROR_CAMPO_CLAVE);
+        }
+        if (UtilUUID.esValorDefecto(usuario.getIndicativoPais().getId())) {
+            faltantes.add(CatalogoMensajes.UsuarioNegocioImpl.USUARIO_ERROR_CAMPO_INDICATIVO_PAIS);
+        }
+        if (utilTexto.esVacia(usuario.getNumeroTelefono())) {
+            faltantes.add(CatalogoMensajes.UsuarioNegocioImpl.USUARIO_ERROR_CAMPO_NUMERO_TELEFONO);
         }
         if (!faltantes.isEmpty()) {
             throw ManosALaObraNegocioExcepcion.crear(String.format(
@@ -81,12 +89,22 @@ public final class ValidarDatosRegistrarNuevoUsuarioRegla implements Regla<Usuar
             throw ManosALaObraNegocioExcepcion.crear(
                     CatalogoMensajes.UsuarioNegocioImpl.USUARIO_ERROR_CLAVE_LONGITUD_NO_VALIDA);
         }
+        if (clave.getBytes(StandardCharsets.UTF_8).length > LONGITUD_MAXIMA_CLAVE_EN_BYTES) {
+            throw ManosALaObraNegocioExcepcion.crear(
+                    CatalogoMensajes.UsuarioNegocioImpl.USUARIO_ERROR_CLAVE_LONGITUD_MAXIMA_NO_VALIDA);
+        }
     }
 
-    private void asegurarTelefonoValido(String telefono) {
-        if (UtilTexto.getUtilTexto().obtenerLongitudCadena(telefono, true) > LONGITUD_MAXIMA_TELEFONO) {
+    private void asegurarNumeroTelefonoValido(String numeroTelefono) {
+        UtilTexto utilTexto = UtilTexto.getUtilTexto();
+        if (!utilTexto.formatoEsValido(numeroTelefono, UtilTexto.SOLO_DIGITOS)) {
             throw ManosALaObraNegocioExcepcion.crear(
-                    CatalogoMensajes.UsuarioNegocioImpl.USUARIO_ERROR_TELEFONO_LONGITUD_NO_VALIDA);
+                    CatalogoMensajes.UsuarioNegocioImpl.USUARIO_ERROR_NUMERO_TELEFONO_FORMATO_NO_VALIDO);
+        }
+        if (!utilTexto.obtenerLongitudCadenaEsValida(numeroTelefono, LONGITUD_MINIMA_NUMERO_TELEFONO,
+                LONGITUD_MAXIMA_NUMERO_TELEFONO, true)) {
+            throw ManosALaObraNegocioExcepcion.crear(
+                    CatalogoMensajes.UsuarioNegocioImpl.USUARIO_ERROR_NUMERO_TELEFONO_LONGITUD_NO_VALIDA);
         }
     }
 }

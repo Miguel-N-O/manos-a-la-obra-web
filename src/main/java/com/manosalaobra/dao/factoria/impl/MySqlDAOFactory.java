@@ -1,5 +1,9 @@
 package com.manosalaobra.dao.factoria.impl;
 
+import com.manosalaobra.dao.datos.entidad.mysql.IndicativoPaisMySqlDAO;
+
+import com.manosalaobra.dao.datos.entidad.IndicativoPaisDAO;
+
 import com.manosalaobra.dao.datos.entidad.EstadoUsuarioDAO;
 import com.manosalaobra.dao.datos.entidad.RolDAO;
 import com.manosalaobra.dao.datos.entidad.UsuarioDAO;
@@ -61,6 +65,11 @@ public final class MySqlDAOFactory extends DAOFactory {
     @Override
     public EstadoUsuarioDAO obtenerEstadoUsuarioDAO() {
         return new EstadoUsuarioMySqlDAO(getConexion());
+    }
+
+    @Override
+    public IndicativoPaisDAO obtenerIndicativoPaisDAO() {
+        return new IndicativoPaisMySqlDAO(getConexion());
     }
 
     private static void asegurarConfiguracion(String url, String usuario) {

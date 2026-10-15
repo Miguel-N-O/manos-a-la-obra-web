@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.manosalaobra.dao.datos.entidad.EstadoUsuarioDAO;
+import com.manosalaobra.dao.datos.entidad.IndicativoPaisDAO;
 import com.manosalaobra.dao.datos.entidad.RolDAO;
 import com.manosalaobra.dao.datos.entidad.UsuarioDAO;
 import com.manosalaobra.dao.factoria.DAOFactory;
@@ -59,6 +60,11 @@ class AsegurarCorreoNoRegistradoReglaTest {
 
             @Override
             public EstadoUsuarioDAO obtenerEstadoUsuarioDAO() {
+                return null;
+            }
+
+            @Override
+            public IndicativoPaisDAO obtenerIndicativoPaisDAO() {
                 return null;
             }
         };

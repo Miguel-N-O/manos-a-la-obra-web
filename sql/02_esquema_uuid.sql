@@ -46,6 +46,14 @@ CREATE TABLE Barrio (
   CONSTRAINT uk_barrio_ciudad_id_nombre UNIQUE (ciudad_id, nombre)
 ) ENGINE=InnoDB;
 
+CREATE TABLE IndicativoPais (
+  id          CHAR(36) NOT NULL DEFAULT (UUID()) PRIMARY KEY,
+  pais        VARCHAR(60) NOT NULL,
+  indicativo  VARCHAR(5) NOT NULL,
+  activo      BOOLEAN NOT NULL DEFAULT TRUE,
+  CONSTRAINT uk_indicativo_pais_pais UNIQUE (pais)
+) ENGINE=InnoDB;
+
 CREATE TABLE Usuario (
   id                 CHAR(36) NOT NULL DEFAULT (UUID()) PRIMARY KEY,
   rol_id             CHAR(36) NOT NULL,
@@ -53,10 +61,13 @@ CREATE TABLE Usuario (
   nombre             VARCHAR(100) NOT NULL,
   correo             VARCHAR(150) NOT NULL,
   clave_hash         VARCHAR(100) NOT NULL,
-  telefono           VARCHAR(20) NOT NULL DEFAULT '',
+  indicativo_pais_id  CHAR(36) NOT NULL,
+  numero_telefono    VARCHAR(14) NOT NULL,
   creado_en          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_usuario_rol_id FOREIGN KEY (rol_id) REFERENCES Rol (id),
   CONSTRAINT fk_usuario_estado_usuario_id FOREIGN KEY (estado_usuario_id) REFERENCES EstadoUsuario (id),
+  CONSTRAINT fk_usuario_indicativo_pais_id FOREIGN KEY (indicativo_pais_id) REFERENCES IndicativoPais (id),
+  CONSTRAINT ck_usuario_numero_telefono CHECK (CHAR_LENGTH(numero_telefono) BETWEEN 7 AND 14),
   CONSTRAINT uk_usuario_correo UNIQUE (correo)
 ) ENGINE=InnoDB;
 

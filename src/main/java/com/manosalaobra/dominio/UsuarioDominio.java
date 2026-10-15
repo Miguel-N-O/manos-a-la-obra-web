@@ -14,7 +14,8 @@ public final class UsuarioDominio {
     private final String correo;
     private final String clave;
     private final String claveHash;
-    private final String telefono;
+    private final IndicativoPaisDominio indicativoPais;
+    private final String numeroTelefono;
 
     private UsuarioDominio(Builder builder) {
         this.id = builder.id;
@@ -24,7 +25,8 @@ public final class UsuarioDominio {
         this.correo = builder.correo;
         this.clave = builder.clave;
         this.claveHash = builder.claveHash;
-        this.telefono = builder.telefono;
+        this.indicativoPais = builder.indicativoPais;
+        this.numeroTelefono = builder.numeroTelefono;
     }
 
     public UUID getId() {
@@ -55,8 +57,12 @@ public final class UsuarioDominio {
         return claveHash;
     }
 
-    public String getTelefono() {
-        return telefono;
+    public IndicativoPaisDominio getIndicativoPais() {
+        return indicativoPais;
+    }
+
+    public String getNumeroTelefono() {
+        return numeroTelefono;
     }
 
     public static class Builder {
@@ -67,7 +73,8 @@ public final class UsuarioDominio {
         private String correo;
         private String clave;
         private String claveHash;
-        private String telefono;
+        private IndicativoPaisDominio indicativoPais;
+        private String numeroTelefono;
 
         public Builder() {
             id = UtilUUID.obtenerUUIDDefecto();
@@ -77,7 +84,8 @@ public final class UsuarioDominio {
             correo = UtilTexto.VACIO;
             clave = UtilTexto.VACIO;
             claveHash = UtilTexto.VACIO;
-            telefono = UtilTexto.VACIO;
+            indicativoPais = new IndicativoPaisDominio.Builder().build();
+            numeroTelefono = UtilTexto.VACIO;
         }
 
         public Builder id(UUID id) {
@@ -115,8 +123,14 @@ public final class UsuarioDominio {
             return this;
         }
 
-        public Builder telefono(String telefono) {
-            this.telefono = UtilTexto.getUtilTexto().quitarEspacioEnBlanco(telefono);
+        public Builder indicativoPais(IndicativoPaisDominio indicativoPais) {
+            this.indicativoPais = UtilObjeto.obtenerValorDefectoSiValorOriginalEsNulo(
+                    indicativoPais, new IndicativoPaisDominio.Builder().build());
+            return this;
+        }
+
+        public Builder numeroTelefono(String numeroTelefono) {
+            this.numeroTelefono = UtilTexto.getUtilTexto().quitarEspacioEnBlanco(numeroTelefono);
             return this;
         }
 
