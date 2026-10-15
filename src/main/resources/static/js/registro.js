@@ -33,7 +33,7 @@ async function registrarCiudadano(evento) {
     });
     const cuerpo = await respuesta.json();
     if (respuesta.ok) {
-      window.location.href = "index.html?registro=ok";
+      window.location.href = "login.html?registro=ok";
       return;
     }
     mostrarError(cuerpo.mensajes.join(" "));

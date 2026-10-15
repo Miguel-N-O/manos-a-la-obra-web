@@ -138,6 +138,10 @@ public final class CatalogoMensajes {
         public static final String USUARIO_ERROR_ESTADO_NO_CONFIGURADO =
                 "No pudimos crear tu cuenta porque falta configurar los estados de cuenta. Avisa al administrador.";
 
+        public static final String USUARIO_ERROR_DATOS_INICIO_SESION_FALTANTES =
+                "Escribe tu correo y tu contraseña.";
+        public static final String USUARIO_ERROR_CREDENCIALES_INCORRECTAS = "Correo o contraseña incorrectos.";
+
         private UsuarioNegocioImpl() {
         }
     }
@@ -145,6 +149,9 @@ public final class CatalogoMensajes {
     public static final class UsuarioFachadaImpl {
         public static final String USUARIO_ERROR_PROBLEMA_INESPERADO_REGISTRANDO_CIUDADANO =
                 "No pudimos crear tu cuenta. Intenta de nuevo en unos minutos.";
+
+        public static final String USUARIO_ERROR_PROBLEMA_INESPERADO_INICIANDO_SESION =
+                "No pudimos iniciar tu sesión. Intenta de nuevo en unos minutos.";
 
         private UsuarioFachadaImpl() {
         }
@@ -155,6 +162,8 @@ public final class CatalogoMensajes {
                 "Algo salió mal de nuestro lado. Intenta de nuevo en unos minutos.";
         public static final String USUARIO_ERROR_RECURSO_NO_ENCONTRADO =
                 "No encontramos lo que buscabas. Revisa la dirección e intenta de nuevo.";
+        public static final String USUARIO_ERROR_DATO_NO_VALIDO =
+                "Uno de los datos enviados no es válido. Revisa lo que elegiste e intenta de nuevo.";
         public static final String USUARIO_ERROR_CUERPO_DE_LA_PETICION_INVALIDO =
                 "No pudimos leer los datos enviados. Revisa el formulario e intenta de nuevo.";
 
@@ -166,6 +175,78 @@ public final class CatalogoMensajes {
         public static final String USUARIO_CIUDADANO_REGISTRADO = "¡Cuenta creada! Ya puedes iniciar sesión.";
 
         private UsuarioController() {
+        }
+    }
+
+    public static final class ServicioMySqlDAO {
+        public static final String USUARIO_ERROR_PROBLEMA_CONSULTANDO_SERVICIO =
+                "No pudimos consultar las especialidades. Intenta de nuevo en unos minutos.";
+        public static final String USUARIO_ERROR_PROBLEMA_NO_CONTROLADO_CONSULTANDO_SERVICIO =
+                "Ocurrió un problema inesperado al consultar las especialidades. Avisa al administrador.";
+
+        private ServicioMySqlDAO() {
+        }
+    }
+
+    public static final class BarrioMySqlDAO {
+        public static final String USUARIO_ERROR_PROBLEMA_CONSULTANDO_BARRIO =
+                "No pudimos consultar los barrios. Intenta de nuevo en unos minutos.";
+        public static final String USUARIO_ERROR_PROBLEMA_NO_CONTROLADO_CONSULTANDO_BARRIO =
+                "Ocurrió un problema inesperado al consultar los barrios. Avisa al administrador.";
+
+        private BarrioMySqlDAO() {
+        }
+    }
+
+    public static final class TecnicoMySqlDAO {
+        public static final String USUARIO_ERROR_PROBLEMA_CONSULTANDO_TECNICO =
+                "No pudimos consultar los técnicos. Intenta de nuevo en unos minutos.";
+        public static final String USUARIO_ERROR_PROBLEMA_NO_CONTROLADO_CONSULTANDO_TECNICO =
+                "Ocurrió un problema inesperado al consultar los técnicos. Avisa al administrador.";
+
+        private TecnicoMySqlDAO() {
+        }
+    }
+
+    public static final class ServicioFachadaImpl {
+        public static final String USUARIO_ERROR_PROBLEMA_INESPERADO_CONSULTANDO_SERVICIOS =
+                "No pudimos cargar las especialidades. Intenta de nuevo en unos minutos.";
+
+        private ServicioFachadaImpl() {
+        }
+    }
+
+    public static final class BarrioFachadaImpl {
+        public static final String USUARIO_ERROR_PROBLEMA_INESPERADO_CONSULTANDO_BARRIOS =
+                "No pudimos cargar los barrios. Intenta de nuevo en unos minutos.";
+
+        private BarrioFachadaImpl() {
+        }
+    }
+
+    public static final class TecnicoFachadaImpl {
+        public static final String USUARIO_ERROR_PROBLEMA_INESPERADO_CONSULTANDO_TECNICOS =
+                "No pudimos buscar técnicos. Intenta de nuevo en unos minutos.";
+
+        private TecnicoFachadaImpl() {
+        }
+    }
+
+    public static final class TecnicoController {
+        public static final String USUARIO_ERROR_NO_HAY_SESION = "Inicia sesión para buscar técnicos.";
+        public static final String USUARIO_ERROR_SOLO_CIUDADANOS = "Solo los ciudadanos pueden buscar técnicos.";
+        public static final String USUARIO_TECNICOS_NO_ENCONTRADOS = "No se encontraron técnicos.";
+
+        private TecnicoController() {
+        }
+    }
+
+    public static final class SesionController {
+        public static final String USUARIO_SESION_INICIADA = "¡Bienvenido de nuevo!";
+        public static final String USUARIO_SESION_CERRADA = "Cerraste sesión.";
+        public static final String USUARIO_ERROR_NO_HAY_SESION = "Inicia sesión para continuar.";
+
+        private SesionController() {
         }
     }
 }

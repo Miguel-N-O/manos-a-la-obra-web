@@ -12,11 +12,14 @@ import com.manosalaobra.dominio.RolDominio;
 import com.manosalaobra.dominio.UsuarioDominio;
 import com.manosalaobra.entidad.EstadoUsuarioEntidad;
 import com.manosalaobra.entidad.RolEntidad;
+import com.manosalaobra.entidad.UsuarioEntidad;
 import com.manosalaobra.negocio.negocio.UsuarioNegocio;
 import com.manosalaobra.negocio.negocio.ensamblador.impl.EstadoUsuarioEnsambladorEntidad;
 import com.manosalaobra.negocio.negocio.ensamblador.impl.RolEnsambladorEntidad;
 import com.manosalaobra.negocio.negocio.ensamblador.impl.UsuarioEnsambladorEntidad;
 import com.manosalaobra.negocio.negocio.reglas.impl.usuario.AsegurarCorreoNoRegistradoRegla;
+import com.manosalaobra.negocio.negocio.reglas.impl.usuario.AsegurarCredencialesValidasRegla;
+import com.manosalaobra.negocio.negocio.reglas.impl.usuario.ValidarDatosIniciarSesionRegla;
 import com.manosalaobra.negocio.negocio.reglas.impl.usuario.ValidarDatosRegistrarNuevoUsuarioRegla;
 import com.manosalaobra.transversal.catalogo.CatalogoMensajes;
 import com.manosalaobra.transversal.excepciones.ManosALaObraNegocioExcepcion;
@@ -54,6 +57,19 @@ public final class UsuarioNegocioImpl implements UsuarioNegocio {
 
         daoFactory.obtenerUsuarioDAO().crear(UsuarioEnsambladorEntidad.getInstancia().convertirAEntidad(ciudadanoNuevo));
         return ciudadanoNuevo;
+    }
+
+    @Override
+    public UsuarioDominio iniciarSesion(UsuarioDominio credenciales) {
+        ValidarDatosIniciarSesionRegla.obtenerInstancia().ejecutar(credenciales);
+
+        UsuarioEntidad filtro = new UsuarioEntidad();
+        filtro.setCorreo(credenciales.getCorreo());
+        List<UsuarioEntidad> encontrados = daoFactory.obtenerUsuarioDAO().consultarPorFiltro(filtro);
+        UsuarioEntidad usuario = encontrados.isEmpty() ? new UsuarioEntidad() : encontrados.get(0);
+
+        AsegurarCredencialesValidasRegla.obtenerInstancia().ejecutar(usuario, credenciales.getClave());
+        return UsuarioEnsambladorEntidad.getInstancia().convertirADominio(usuario);
     }
 
     private RolDominio consultarRolPorNombre(String nombre) {

@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @RestControllerAdvice
@@ -30,6 +31,13 @@ public abstract class AbstractRestController {
         REGISTRO.warn("Cuerpo de la petición ilegible: {}", excepcion.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(RespuestaError.crear(
                 CatalogoMensajes.AbstractRestController.USUARIO_ERROR_CUERPO_DE_LA_PETICION_INVALIDO));
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<RespuestaError<String>> manejarDatoNoValido(MethodArgumentTypeMismatchException excepcion) {
+        REGISTRO.warn("Dato de la petición con formato no válido: {}", excepcion.getName());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(RespuestaError.crear(
+                CatalogoMensajes.AbstractRestController.USUARIO_ERROR_DATO_NO_VALIDO));
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
