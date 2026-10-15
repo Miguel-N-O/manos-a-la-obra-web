@@ -37,6 +37,7 @@ public final class UsuarioFachadaImpl implements UsuarioFachada {
             UsuarioDominio ciudadanoRegistrado = usuarioNegocio.registrarCiudadano(usuarioDominio);
 
             daoFactory.confirmarTransaccion();
+            transaccionIniciada = false;
             return UsuarioEnsambladorDTO.getInstancia().convertirADTO(ciudadanoRegistrado);
         } catch (ManosALaObraExcepcion excepcion) {
             cancelarSiHaceFalta(transaccionIniciada);

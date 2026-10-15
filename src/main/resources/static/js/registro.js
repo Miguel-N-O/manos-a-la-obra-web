@@ -15,7 +15,8 @@ function leerFormulario() {
   return {
     nombre: formulario.nombre.value,
     correo: formulario.correo.value,
-    telefono: formulario.telefono.value,
+    indicativoPais: { id: formulario.indicativoPais.value },
+    numeroTelefono: formulario.numeroTelefono.value,
     clave: formulario.clave.value
   };
 }
@@ -43,4 +44,31 @@ async function registrarCiudadano(evento) {
   }
 }
 
+async function cargarIndicativos() {
+  try {
+    const respuesta = await fetch("/api/indicativos-pais");
+    const cuerpo = await respuesta.json();
+    if (!respuesta.ok) {
+      mostrarError(cuerpo.mensajes.join(" "));
+      return;
+    }
+    const lista = formulario.indicativoPais;
+    cuerpo.datos.forEach((item) => {
+      const opcion = document.createElement("option");
+      opcion.value = item.id;
+      opcion.textContent = item.pais + " (+" + item.indicativo + ")";
+      if (item.pais === "Colombia") {
+        opcion.selected = true;
+      }
+      lista.appendChild(opcion);
+    });
+  } catch (error) {
+    mostrarError("No pudimos cargar los indicativos de país. Recarga la página.");
+  }
+}
+
+formulario.numeroTelefono.addEventListener("input", () => {
+  formulario.numeroTelefono.value = formulario.numeroTelefono.value.replace(/\D/g, "");
+});
 formulario.addEventListener("submit", registrarCiudadano);
+cargarIndicativos();

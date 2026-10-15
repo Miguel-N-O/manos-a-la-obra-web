@@ -1,5 +1,11 @@
 package com.manosalaobra.negocio.negocio.impl;
 
+import com.manosalaobra.negocio.negocio.reglas.impl.indicativopais.AsegurarIndicativoPaisExisteRegla;
+
+import com.manosalaobra.negocio.negocio.ensamblador.impl.IndicativoPaisEnsambladorEntidad;
+
+import com.manosalaobra.dominio.IndicativoPaisDominio;
+
 import com.manosalaobra.dao.factoria.DAOFactory;
 import com.manosalaobra.dominio.EstadoUsuarioDominio;
 import com.manosalaobra.dominio.RolDominio;
@@ -31,6 +37,9 @@ public final class UsuarioNegocioImpl implements UsuarioNegocio {
     public UsuarioDominio registrarCiudadano(UsuarioDominio usuario) {
         ValidarDatosRegistrarNuevoUsuarioRegla.obtenerInstancia().ejecutar(usuario);
         AsegurarCorreoNoRegistradoRegla.obtenerInstancia().ejecutar(usuario.getCorreo(), daoFactory);
+        AsegurarIndicativoPaisExisteRegla.obtenerInstancia().ejecutar(usuario.getIndicativoPais().getId(), daoFactory);
+        IndicativoPaisDominio indicativoPais = IndicativoPaisEnsambladorEntidad.getInstancia().convertirADominio(
+                daoFactory.obtenerIndicativoPaisDAO().consultarPorId(usuario.getIndicativoPais().getId()));
 
         UsuarioDominio ciudadanoNuevo = new UsuarioDominio.Builder()
                 .id(UtilUUID.generar())
@@ -39,7 +48,8 @@ public final class UsuarioNegocioImpl implements UsuarioNegocio {
                 .nombre(usuario.getNombre())
                 .correo(usuario.getCorreo())
                 .claveHash(Claves.cifrar(usuario.getClave()))
-                .telefono(usuario.getTelefono())
+                .indicativoPais(indicativoPais)
+                .numeroTelefono(usuario.getNumeroTelefono())
                 .build();
 
         daoFactory.obtenerUsuarioDAO().crear(UsuarioEnsambladorEntidad.getInstancia().convertirAEntidad(ciudadanoNuevo));

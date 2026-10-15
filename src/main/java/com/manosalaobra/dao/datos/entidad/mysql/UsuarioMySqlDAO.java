@@ -1,5 +1,7 @@
 package com.manosalaobra.dao.datos.entidad.mysql;
 
+import com.manosalaobra.entidad.IndicativoPaisEntidad;
+
 import com.manosalaobra.dao.datos.entidad.SqlDAO;
 import com.manosalaobra.dao.datos.entidad.UsuarioDAO;
 import com.manosalaobra.entidad.EstadoUsuarioEntidad;
@@ -22,18 +24,23 @@ import java.util.UUID;
 
 public final class UsuarioMySqlDAO extends SqlDAO implements UsuarioDAO {
 
+    private static final int CODIGO_ERROR_DUPLICADO = 1062;
+
     private static final String INSERTAR = """
-            INSERT INTO Usuario (id, rol_id, estado_usuario_id, nombre, correo, clave_hash, telefono)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO Usuario (id, rol_id, estado_usuario_id, nombre, correo, clave_hash, indicativo_pais_id, numero_telefono)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """;
 
     private static final String SELECCIONAR = """
-            SELECT u.id, u.nombre, u.correo, u.clave_hash, u.telefono,
+            SELECT u.id, u.nombre, u.correo, u.clave_hash, u.numero_telefono,
                    r.id AS rol_id, r.nombre AS rol_nombre, r.activo AS rol_activo,
-                   e.id AS estado_usuario_id, e.nombre AS estado_usuario_nombre, e.activo AS estado_usuario_activo
+                   e.id AS estado_usuario_id, e.nombre AS estado_usuario_nombre, e.activo AS estado_usuario_activo,
+                   i.id AS indicativo_pais_id, i.pais AS indicativo_pais_pais,
+                   i.indicativo AS indicativo_pais_indicativo, i.activo AS indicativo_pais_activo
             FROM Usuario u
             JOIN Rol r ON r.id = u.rol_id
             JOIN EstadoUsuario e ON e.id = u.estado_usuario_id
+            JOIN IndicativoPais i ON i.id = u.indicativo_pais_id
             WHERE 1 = 1
             """;
 
@@ -50,9 +57,15 @@ public final class UsuarioMySqlDAO extends SqlDAO implements UsuarioDAO {
             sentencia.setString(4, entidad.getNombre());
             sentencia.setString(5, entidad.getCorreo());
             sentencia.setString(6, entidad.getClaveHash());
-            sentencia.setString(7, entidad.getTelefono());
+            sentencia.setString(7, entidad.getIndicativoPais().getId().toString());
+            sentencia.setString(8, entidad.getNumeroTelefono());
             sentencia.executeUpdate();
         } catch (SQLException excepcion) {
+            if (excepcion.getErrorCode() == CODIGO_ERROR_DUPLICADO) {
+                throw ManosALaObraDatosExcepcion.crear(
+                        CatalogoMensajes.UsuarioMySqlDAO.USUARIO_ERROR_CORREO_YA_REGISTRADO,
+                        excepcion.getMessage(), excepcion);
+            }
             throw ManosALaObraDatosExcepcion.crear(
                     CatalogoMensajes.UsuarioMySqlDAO.USUARIO_ERROR_PROBLEMA_CREANDO_USUARIO,
                     excepcion.getMessage(), excepcion);
@@ -139,6 +152,11 @@ public final class UsuarioMySqlDAO extends SqlDAO implements UsuarioDAO {
                 UtilUUID.convertirAUUID(fila.getString("estado_usuario_id")),
                 fila.getString("estado_usuario_nombre"),
                 fila.getBoolean("estado_usuario_activo"));
+        IndicativoPaisEntidad indicativoPais = new IndicativoPaisEntidad(
+                UtilUUID.convertirAUUID(fila.getString("indicativo_pais_id")),
+                fila.getString("indicativo_pais_pais"),
+                fila.getString("indicativo_pais_indicativo"),
+                fila.getBoolean("indicativo_pais_activo"));
         return new UsuarioEntidad(
                 UtilUUID.convertirAUUID(fila.getString("id")),
                 rol,
@@ -146,6 +164,7 @@ public final class UsuarioMySqlDAO extends SqlDAO implements UsuarioDAO {
                 fila.getString("nombre"),
                 fila.getString("correo"),
                 fila.getString("clave_hash"),
-                fila.getString("telefono"));
+                indicativoPais,
+                fila.getString("numero_telefono"));
     }
 }

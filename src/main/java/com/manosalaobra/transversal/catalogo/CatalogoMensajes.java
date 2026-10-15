@@ -58,6 +58,7 @@ public final class CatalogoMensajes {
     }
 
     public static final class UsuarioMySqlDAO {
+        public static final String USUARIO_ERROR_CORREO_YA_REGISTRADO = "Ese correo ya está registrado.";
         public static final String USUARIO_ERROR_PROBLEMA_CREANDO_USUARIO =
                 "No pudimos guardar tu cuenta. Revisa tus datos e intenta de nuevo.";
         public static final String USUARIO_ERROR_PROBLEMA_NO_CONTROLADO_CREANDO_USUARIO =
@@ -68,6 +69,24 @@ public final class CatalogoMensajes {
                 "Ocurrió un problema inesperado al consultar la cuenta. Intenta de nuevo o avisa al administrador.";
 
         private UsuarioMySqlDAO() {
+        }
+    }
+
+    public static final class IndicativoPaisMySqlDAO {
+        public static final String USUARIO_ERROR_PROBLEMA_CONSULTANDO_INDICATIVO_PAIS =
+                "No pudimos consultar los indicativos de país. Intenta de nuevo en unos minutos.";
+        public static final String USUARIO_ERROR_PROBLEMA_NO_CONTROLADO_CONSULTANDO_INDICATIVO_PAIS =
+                "Ocurrió un problema inesperado al consultar los indicativos de país. Avisa al administrador.";
+
+        private IndicativoPaisMySqlDAO() {
+        }
+    }
+
+    public static final class IndicativoPaisFachadaImpl {
+        public static final String USUARIO_ERROR_PROBLEMA_INESPERADO_CONSULTANDO_INDICATIVOS_PAIS =
+                "No pudimos cargar los indicativos de país. Intenta de nuevo en unos minutos.";
+
+        private IndicativoPaisFachadaImpl() {
         }
     }
 
@@ -103,8 +122,16 @@ public final class CatalogoMensajes {
                 "Tu correo es muy largo (máximo 150 caracteres).";
         public static final String USUARIO_ERROR_CLAVE_LONGITUD_NO_VALIDA =
                 "Tu contraseña es muy corta (mínimo 8 caracteres).";
-        public static final String USUARIO_ERROR_TELEFONO_LONGITUD_NO_VALIDA =
-                "Tu teléfono es muy largo (máximo 20 caracteres).";
+        public static final String USUARIO_ERROR_CLAVE_LONGITUD_MAXIMA_NO_VALIDA =
+                "Tu contraseña es muy larga (máximo 72 caracteres).";
+        public static final String USUARIO_ERROR_CAMPO_INDICATIVO_PAIS = "el indicativo de país";
+        public static final String USUARIO_ERROR_CAMPO_NUMERO_TELEFONO = "tu teléfono";
+        public static final String USUARIO_ERROR_INDICATIVO_PAIS_NO_VALIDO =
+                "El indicativo de país no es válido. Elige uno de la lista.";
+        public static final String USUARIO_ERROR_NUMERO_TELEFONO_FORMATO_NO_VALIDO =
+                "Tu teléfono solo puede tener números, sin el indicativo, espacios ni símbolos.";
+        public static final String USUARIO_ERROR_NUMERO_TELEFONO_LONGITUD_NO_VALIDA =
+                "Tu teléfono debe tener entre 7 y 14 números.";
         public static final String USUARIO_ERROR_CORREO_YA_REGISTRADO = "Ese correo ya está registrado.";
         public static final String USUARIO_ERROR_ROL_NO_CONFIGURADO =
                 "No pudimos crear tu cuenta porque falta configurar los tipos de cuenta. Avisa al administrador.";

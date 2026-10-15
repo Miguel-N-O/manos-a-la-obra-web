@@ -14,7 +14,8 @@ public final class UsuarioEntidad {
     private String nombre;
     private String correo;
     private String claveHash;
-    private String telefono;
+    private IndicativoPaisEntidad indicativoPais;
+    private String numeroTelefono;
 
     public UsuarioEntidad() {
         setId(UtilUUID.obtenerUUIDDefecto());
@@ -23,17 +24,19 @@ public final class UsuarioEntidad {
         setNombre(UtilTexto.VACIO);
         setCorreo(UtilTexto.VACIO);
         setClaveHash(UtilTexto.VACIO);
-        setTelefono(UtilTexto.VACIO);
+        setIndicativoPais(new IndicativoPaisEntidad());
+        setNumeroTelefono(UtilTexto.VACIO);
     }
 
-    public UsuarioEntidad(UUID id, RolEntidad rol, EstadoUsuarioEntidad estadoUsuario, String nombre, String correo, String claveHash, String telefono) {
+    public UsuarioEntidad(UUID id, RolEntidad rol, EstadoUsuarioEntidad estadoUsuario, String nombre, String correo, String claveHash, IndicativoPaisEntidad indicativoPais, String numeroTelefono) {
         setId(id);
         setRol(rol);
         setEstadoUsuario(estadoUsuario);
         setNombre(nombre);
         setCorreo(correo);
         setClaveHash(claveHash);
-        setTelefono(telefono);
+        setIndicativoPais(indicativoPais);
+        setNumeroTelefono(numeroTelefono);
     }
 
     public UUID getId() {
@@ -84,11 +87,19 @@ public final class UsuarioEntidad {
         this.claveHash = UtilTexto.getUtilTexto().quitarEspacioEnBlanco(claveHash);
     }
 
-    public String getTelefono() {
-        return telefono;
+    public IndicativoPaisEntidad getIndicativoPais() {
+        return indicativoPais;
     }
 
-    public void setTelefono(String telefono) {
-        this.telefono = UtilTexto.getUtilTexto().quitarEspacioEnBlanco(telefono);
+    public void setIndicativoPais(IndicativoPaisEntidad indicativoPais) {
+        this.indicativoPais = UtilObjeto.obtenerValorDefectoSiValorOriginalEsNulo(indicativoPais, new IndicativoPaisEntidad());
+    }
+
+    public String getNumeroTelefono() {
+        return numeroTelefono;
+    }
+
+    public void setNumeroTelefono(String numeroTelefono) {
+        this.numeroTelefono = UtilTexto.getUtilTexto().quitarEspacioEnBlanco(numeroTelefono);
     }
 }

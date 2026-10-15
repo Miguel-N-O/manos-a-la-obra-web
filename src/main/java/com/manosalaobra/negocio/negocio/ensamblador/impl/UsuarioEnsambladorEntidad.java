@@ -28,7 +28,8 @@ public final class UsuarioEnsambladorEntidad implements EnsambladorEntidad<Usuar
                 dominioSeguro.getNombre(),
                 dominioSeguro.getCorreo(),
                 dominioSeguro.getClaveHash(),
-                dominioSeguro.getTelefono());
+                IndicativoPaisEnsambladorEntidad.getInstancia().convertirAEntidad(dominioSeguro.getIndicativoPais()),
+                dominioSeguro.getNumeroTelefono());
     }
 
     @Override
@@ -43,7 +44,9 @@ public final class UsuarioEnsambladorEntidad implements EnsambladorEntidad<Usuar
                 .nombre(entidadSegura.getNombre())
                 .correo(entidadSegura.getCorreo())
                 .claveHash(entidadSegura.getClaveHash())
-                .telefono(entidadSegura.getTelefono())
+                .indicativoPais(IndicativoPaisEnsambladorEntidad.getInstancia()
+                        .convertirADominio(entidadSegura.getIndicativoPais()))
+                .numeroTelefono(entidadSegura.getNumeroTelefono())
                 .build();
     }
 }

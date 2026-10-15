@@ -32,6 +32,7 @@ class UsuarioEnsambladorDTOTest {
     void convertirUnObjetoNuloDevuelveUnDTOConValoresPorDefecto() {
         UsuarioDTO dto = UsuarioEnsambladorDTO.getInstancia().convertirADTO((UsuarioDominio) null);
         assertNotNull(dto.getRol());
+        assertNotNull(dto.getIndicativoPais());
         assertEquals("", dto.getNombre());
     }
 

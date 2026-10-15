@@ -14,7 +14,8 @@ public final class UsuarioDTO {
     private String nombre;
     private String correo;
     private String clave;
-    private String telefono;
+    private IndicativoPaisDTO indicativoPais;
+    private String numeroTelefono;
 
     public UsuarioDTO() {
         setId(UtilUUID.obtenerUUIDDefecto());
@@ -23,7 +24,8 @@ public final class UsuarioDTO {
         setNombre(UtilTexto.VACIO);
         setCorreo(UtilTexto.VACIO);
         setClave(UtilTexto.VACIO);
-        setTelefono(UtilTexto.VACIO);
+        setIndicativoPais(new IndicativoPaisDTO());
+        setNumeroTelefono(UtilTexto.VACIO);
     }
 
     public UUID getId() {
@@ -74,11 +76,19 @@ public final class UsuarioDTO {
         this.clave = UtilTexto.getUtilTexto().obtenerValorDefecto(clave);
     }
 
-    public String getTelefono() {
-        return telefono;
+    public IndicativoPaisDTO getIndicativoPais() {
+        return indicativoPais;
     }
 
-    public void setTelefono(String telefono) {
-        this.telefono = UtilTexto.getUtilTexto().quitarEspacioEnBlanco(telefono);
+    public void setIndicativoPais(IndicativoPaisDTO indicativoPais) {
+        this.indicativoPais = UtilObjeto.obtenerValorDefectoSiValorOriginalEsNulo(indicativoPais, new IndicativoPaisDTO());
+    }
+
+    public String getNumeroTelefono() {
+        return numeroTelefono;
+    }
+
+    public void setNumeroTelefono(String numeroTelefono) {
+        this.numeroTelefono = UtilTexto.getUtilTexto().quitarEspacioEnBlanco(numeroTelefono);
     }
 }
