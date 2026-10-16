@@ -6,9 +6,13 @@ import com.manosalaobra.dominio.TecnicoDominio;
 import com.manosalaobra.entidad.TecnicoEntidad;
 import com.manosalaobra.negocio.negocio.TecnicoNegocio;
 import com.manosalaobra.negocio.negocio.ensamblador.impl.TecnicoEnsambladorEntidad;
+import com.manosalaobra.transversal.catalogo.CatalogoMensajes;
+import com.manosalaobra.transversal.excepciones.ManosALaObraNegocioExcepcion;
+import com.manosalaobra.transversal.utilitarios.UtilUUID;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 
 public final class TecnicoNegocioImpl implements TecnicoNegocio {
 
@@ -33,5 +37,23 @@ public final class TecnicoNegocioImpl implements TecnicoNegocio {
         }
         tecnicos.sort(POR_PROMEDIO_Y_NOMBRE);
         return tecnicos;
+    }
+
+    @Override
+    public TecnicoDominio consultarPorId(UUID id) {
+        if (UtilUUID.esValorDefecto(id)) {
+            throw ManosALaObraNegocioExcepcion.crear(
+                    CatalogoMensajes.TecnicoNegocioImpl.USUARIO_ERROR_TECNICO_NO_ENCONTRADO);
+        }
+        TecnicoEntidad filtroEntidad = new TecnicoEntidad();
+        filtroEntidad.setId(id);
+        filtroEntidad.getUsuario().getEstadoUsuario().setNombre(EstadoUsuarioDominio.ACTIVO);
+
+        List<TecnicoEntidad> encontrados = daoFactory.obtenerTecnicoDAO().consultarPorFiltro(filtroEntidad);
+        if (encontrados.isEmpty()) {
+            throw ManosALaObraNegocioExcepcion.crear(
+                    CatalogoMensajes.TecnicoNegocioImpl.USUARIO_ERROR_TECNICO_NO_ENCONTRADO);
+        }
+        return TecnicoEnsambladorEntidad.getInstancia().convertirADominio(encontrados.get(0));
     }
 }
