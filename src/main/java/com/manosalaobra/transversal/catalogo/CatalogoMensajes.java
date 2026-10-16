@@ -227,14 +227,27 @@ public final class CatalogoMensajes {
     public static final class TecnicoFachadaImpl {
         public static final String USUARIO_ERROR_PROBLEMA_INESPERADO_CONSULTANDO_TECNICOS =
                 "No pudimos buscar técnicos. Intenta de nuevo en unos minutos.";
+        public static final String USUARIO_ERROR_PROBLEMA_INESPERADO_CONSULTANDO_PERFIL =
+                "No pudimos cargar el perfil del técnico. Intenta de nuevo en unos minutos.";
 
         private TecnicoFachadaImpl() {
+        }
+    }
+
+    public static final class TecnicoNegocioImpl {
+        public static final String USUARIO_ERROR_TECNICO_NO_ENCONTRADO =
+                "El técnico que buscas no existe o no está disponible.";
+
+        private TecnicoNegocioImpl() {
         }
     }
 
     public static final class TecnicoController {
         public static final String USUARIO_ERROR_NO_HAY_SESION = "Inicia sesión para buscar técnicos.";
         public static final String USUARIO_ERROR_SOLO_CIUDADANOS = "Solo los ciudadanos pueden buscar técnicos.";
+        public static final String USUARIO_ERROR_NO_HAY_SESION_PERFIL = "Inicia sesión para ver el perfil del técnico.";
+        public static final String USUARIO_ERROR_SOLO_CIUDADANOS_PERFIL =
+                "Solo los ciudadanos pueden ver el perfil de los técnicos.";
         public static final String USUARIO_TECNICOS_NO_ENCONTRADOS = "No se encontraron técnicos.";
 
         private TecnicoController() {

@@ -11,6 +11,7 @@ import com.manosalaobra.transversal.catalogo.CatalogoMensajes;
 import com.manosalaobra.transversal.excepciones.ManosALaObraExcepcion;
 import com.manosalaobra.transversal.excepciones.ManosALaObraFachadaExcepcion;
 import java.util.List;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +38,22 @@ public final class TecnicoFachadaImpl implements TecnicoFachada {
             REGISTRO.error("Problema inesperado consultando los técnicos", excepcion);
             throw ManosALaObraFachadaExcepcion.crear(
                     CatalogoMensajes.TecnicoFachadaImpl.USUARIO_ERROR_PROBLEMA_INESPERADO_CONSULTANDO_TECNICOS,
+                    excepcion.getMessage(), excepcion);
+        } finally {
+            daoFactory.cerrarConexion();
+        }
+    }
+
+    @Override
+    public TecnicoDTO consultarPorId(UUID id) {
+        try {
+            return TecnicoEnsambladorDTO.getInstancia().convertirADTO(tecnicoNegocio.consultarPorId(id));
+        } catch (ManosALaObraExcepcion excepcion) {
+            throw excepcion;
+        } catch (Exception excepcion) {
+            REGISTRO.error("Problema inesperado consultando el perfil del técnico", excepcion);
+            throw ManosALaObraFachadaExcepcion.crear(
+                    CatalogoMensajes.TecnicoFachadaImpl.USUARIO_ERROR_PROBLEMA_INESPERADO_CONSULTANDO_PERFIL,
                     excepcion.getMessage(), excepcion);
         } finally {
             daoFactory.cerrarConexion();
