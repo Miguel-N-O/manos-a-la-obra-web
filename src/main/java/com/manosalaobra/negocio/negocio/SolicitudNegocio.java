@@ -11,4 +11,10 @@ public interface SolicitudNegocio {
     List<SolicitudDominio> consultarDelCiudadano(UUID ciudadanoId);
 
     SolicitudDominio consultarUnaDelCiudadano(UUID ciudadanoId, UUID solicitudId);
+
+    List<SolicitudDominio> consultarRecibidas(UUID usuarioTecnicoId);
+
+    SolicitudDominio consultarUnaRecibida(UUID usuarioTecnicoId, UUID solicitudId);
+
+    void marcarRecibidasComoNotificadas(UUID usuarioTecnicoId);
 }

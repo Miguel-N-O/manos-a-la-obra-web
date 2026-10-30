@@ -88,6 +88,65 @@ public final class SolicitudFachadaImpl implements SolicitudFachada {
         }
     }
 
+    @Override
+    public List<SolicitudDTO> consultarRecibidas(UUID usuarioTecnicoId) {
+        try {
+            return SolicitudEnsambladorDTO.getInstancia().convertirADTO(
+                    solicitudNegocio.consultarRecibidas(usuarioTecnicoId));
+        } catch (ManosALaObraExcepcion excepcion) {
+            throw excepcion;
+        } catch (Exception excepcion) {
+            REGISTRO.error("Problema inesperado consultando las solicitudes recibidas", excepcion);
+            throw ManosALaObraFachadaExcepcion.crear(
+                    CatalogoMensajes.SolicitudFachadaImpl.USUARIO_ERROR_PROBLEMA_INESPERADO_CONSULTANDO_SOLICITUDES,
+                    excepcion.getMessage(), excepcion);
+        } finally {
+            daoFactory.cerrarConexion();
+        }
+    }
+
+    @Override
+    public SolicitudDTO consultarUnaRecibida(UUID usuarioTecnicoId, UUID solicitudId) {
+        try {
+            return SolicitudEnsambladorDTO.getInstancia().convertirADTO(
+                    solicitudNegocio.consultarUnaRecibida(usuarioTecnicoId, solicitudId));
+        } catch (ManosALaObraExcepcion excepcion) {
+            throw excepcion;
+        } catch (Exception excepcion) {
+            REGISTRO.error("Problema inesperado consultando una solicitud recibida", excepcion);
+            throw ManosALaObraFachadaExcepcion.crear(
+                    CatalogoMensajes.SolicitudFachadaImpl.USUARIO_ERROR_PROBLEMA_INESPERADO_CONSULTANDO_SOLICITUDES,
+                    excepcion.getMessage(), excepcion);
+        } finally {
+            daoFactory.cerrarConexion();
+        }
+    }
+
+    @Override
+    public void marcarRecibidasComoNotificadas(UUID usuarioTecnicoId) {
+        boolean transaccionIniciada = false;
+        try {
+            daoFactory.iniciarTransaccion();
+            transaccionIniciada = true;
+
+            solicitudNegocio.marcarRecibidasComoNotificadas(usuarioTecnicoId);
+
+            daoFactory.confirmarTransaccion();
+            transaccionIniciada = false;
+        } catch (ManosALaObraExcepcion excepcion) {
+            cancelarSiHaceFalta(transaccionIniciada);
+            throw excepcion;
+        } catch (Exception excepcion) {
+            cancelarSiHaceFalta(transaccionIniciada);
+            REGISTRO.error("Problema inesperado marcando las solicitudes como notificadas", excepcion);
+            throw ManosALaObraFachadaExcepcion.crear(
+                    CatalogoMensajes.SolicitudFachadaImpl.USUARIO_ERROR_PROBLEMA_INESPERADO_MARCANDO_NOTIFICADAS,
+                    excepcion.getMessage(), excepcion);
+        } finally {
+            daoFactory.cerrarConexion();
+        }
+    }
+
     private void cancelarSiHaceFalta(boolean transaccionIniciada) {
         if (transaccionIniciada) {
             daoFactory.cancelarTransaccion();

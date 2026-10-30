@@ -1,7 +1,9 @@
 package com.manosalaobra.negocio.negocio.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.manosalaobra.dao.datos.entidad.BarrioDAO;
 import com.manosalaobra.dao.datos.entidad.EstadoSolicitudDAO;
@@ -29,6 +31,7 @@ import org.junit.jupiter.api.Test;
 class SolicitudNegocioImplTest {
 
     private static final UUID ID_TECNICO = UtilUUID.generar();
+    private static final UUID ID_USUARIO_TECNICO = UtilUUID.generar();
     private static final UUID ID_BARRIO = UtilUUID.generar();
     private static final UUID ID_PENDIENTE = UtilUUID.generar();
 
@@ -53,7 +56,9 @@ class SolicitudNegocioImplTest {
                 boolean mismoId = UtilUUID.esValorDefecto(filtro.getId()) || filtro.getId().equals(solicitud.getId());
                 boolean mismoCiudadano = UtilUUID.esValorDefecto(filtro.getCiudadano().getId())
                         || filtro.getCiudadano().getId().equals(solicitud.getCiudadano().getId());
-                if (mismoId && mismoCiudadano) {
+                boolean mismoTecnico = UtilUUID.esValorDefecto(filtro.getTecnico().getId())
+                        || filtro.getTecnico().getId().equals(solicitud.getTecnico().getId());
+                if (mismoId && mismoCiudadano && mismoTecnico) {
                     encontradas.add(solicitud);
                 }
             }
@@ -64,9 +69,18 @@ class SolicitudNegocioImplTest {
         public List<SolicitudEntidad> consultarTodos() {
             return solicitudes;
         }
+
+        @Override
+        public void marcarComoNotificadas(UUID tecnicoId) {
+            for (SolicitudEntidad solicitud : solicitudes) {
+                if (tecnicoId.equals(solicitud.getTecnico().getId())) {
+                    solicitud.setNotificada(true);
+                }
+            }
+        }
     }
 
-    // Solo existe el técnico ID_TECNICO, activo y con perfil
+    // Solo existe el técnico ID_TECNICO (usuario ID_USUARIO_TECNICO), activo y con perfil
     private static TecnicoDAO tecnicoDAO() {
         return new TecnicoDAO() {
             @Override
@@ -97,7 +111,11 @@ class SolicitudNegocioImplTest {
 
             @Override
             public TecnicoEntidad consultarPorUsuario(UUID usuarioId) {
-                return new TecnicoEntidad();
+                TecnicoEntidad tecnico = new TecnicoEntidad();
+                if (ID_USUARIO_TECNICO.equals(usuarioId)) {
+                    tecnico.setId(ID_TECNICO);
+                }
+                return tecnico;
             }
 
             @Override
@@ -204,6 +222,57 @@ class SolicitudNegocioImplTest {
         ManosALaObraExcepcion excepcion = assertThrows(ManosALaObraExcepcion.class,
                 () -> negocio.consultarUnaDelCiudadano(beto, deAna.getId()));
         assertEquals("No encontramos esa solicitud.", excepcion.getMensajeUsuario());
+    }
+
+    @Test
+    void elTecnicoVeSusSolicitudesConLasPendientesPrimero() {
+        SolicitudDominio primera = negocio.crear(UtilUUID.generar(), solicitudPara(ID_TECNICO).build());
+        SolicitudDominio segunda = negocio.crear(UtilUUID.generar(), solicitudPara(ID_TECNICO).build());
+        // El DAO entrega primero la rechazada, pero la pendiente debe quedar arriba
+        solicitudDAO.solicitudes.get(0).setEstadoSolicitud(
+                new EstadoSolicitudEntidad(UtilUUID.generar(), EstadoSolicitudDominio.RECHAZADA, true));
+
+        List<SolicitudDominio> recibidas = negocio.consultarRecibidas(ID_USUARIO_TECNICO);
+
+        assertEquals(2, recibidas.size());
+        assertEquals(segunda.getId(), recibidas.get(0).getId());
+        assertEquals(primera.getId(), recibidas.get(1).getId());
+    }
+
+    @Test
+    void elTecnicoSoloVeLasSolicitudesDirigidasAEl() {
+        SolicitudDominio suya = negocio.crear(UtilUUID.generar(), solicitudPara(ID_TECNICO).build());
+        SolicitudEntidad deOtroTecnico = new SolicitudEntidad();
+        deOtroTecnico.setId(UtilUUID.generar());
+        deOtroTecnico.getTecnico().setId(UtilUUID.generar());
+        solicitudDAO.solicitudes.add(deOtroTecnico);
+
+        assertEquals(1, negocio.consultarRecibidas(ID_USUARIO_TECNICO).size());
+        assertEquals(suya.getId(), negocio.consultarUnaRecibida(ID_USUARIO_TECNICO, suya.getId()).getId());
+        ManosALaObraExcepcion excepcion = assertThrows(ManosALaObraExcepcion.class,
+                () -> negocio.consultarUnaRecibida(ID_USUARIO_TECNICO, deOtroTecnico.getId()));
+        assertEquals("No encontramos esa solicitud.", excepcion.getMensajeUsuario());
+    }
+
+    @Test
+    void sinRegistroDeTecnicoNoConsultaSolicitudesRecibidas() {
+        negocio.crear(UtilUUID.generar(), solicitudPara(ID_TECNICO).build());
+        assertThrows(ManosALaObraExcepcion.class, () -> negocio.consultarRecibidas(UtilUUID.generar()));
+        assertThrows(ManosALaObraExcepcion.class,
+                () -> negocio.consultarRecibidas(UtilUUID.obtenerUUIDDefecto()));
+    }
+
+    @Test
+    void marcaComoNotificadasSoloLasDelTecnico() {
+        negocio.crear(UtilUUID.generar(), solicitudPara(ID_TECNICO).build());
+        SolicitudEntidad deOtroTecnico = new SolicitudEntidad();
+        deOtroTecnico.getTecnico().setId(UtilUUID.generar());
+        solicitudDAO.solicitudes.add(deOtroTecnico);
+
+        negocio.marcarRecibidasComoNotificadas(ID_USUARIO_TECNICO);
+
+        assertTrue(solicitudDAO.solicitudes.get(0).isNotificada());
+        assertFalse(deOtroTecnico.isNotificada());
     }
 
     @Test

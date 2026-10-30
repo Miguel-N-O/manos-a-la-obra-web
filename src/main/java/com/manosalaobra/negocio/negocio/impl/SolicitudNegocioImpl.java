@@ -6,6 +6,7 @@ import com.manosalaobra.dominio.SolicitudDominio;
 import com.manosalaobra.dominio.UsuarioDominio;
 import com.manosalaobra.entidad.EstadoSolicitudEntidad;
 import com.manosalaobra.entidad.SolicitudEntidad;
+import com.manosalaobra.entidad.TecnicoEntidad;
 import com.manosalaobra.negocio.negocio.SolicitudNegocio;
 import com.manosalaobra.negocio.negocio.ensamblador.impl.EstadoSolicitudEnsambladorEntidad;
 import com.manosalaobra.negocio.negocio.ensamblador.impl.SolicitudEnsambladorEntidad;
@@ -16,6 +17,7 @@ import com.manosalaobra.transversal.catalogo.CatalogoMensajes;
 import com.manosalaobra.transversal.excepciones.ManosALaObraNegocioExcepcion;
 import com.manosalaobra.transversal.utilitarios.UtilUUID;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -65,7 +67,58 @@ public final class SolicitudNegocioImpl implements SolicitudNegocio {
         SolicitudEntidad filtro = new SolicitudEntidad();
         filtro.setId(solicitudId);
         filtro.getCiudadano().setId(ciudadanoId);
-        List<SolicitudEntidad> encontradas = consultarConFiltroSeguro(ciudadanoId, filtro);
+        return obtenerUnica(consultarConFiltroSeguro(ciudadanoId, filtro));
+    }
+
+    // HU-10 CA-02 y CA-03: solo las dirigidas al técnico, con las pendientes primero (CU18)
+    @Override
+    public List<SolicitudDominio> consultarRecibidas(UUID usuarioTecnicoId) {
+        SolicitudEntidad filtro = new SolicitudEntidad();
+        filtro.getTecnico().setId(consultarIdTecnico(usuarioTecnicoId));
+        List<SolicitudDominio> solicitudes = convertirADominio(
+                daoFactory.obtenerSolicitudDAO().consultarPorFiltro(filtro));
+        // El DAO las trae de la más reciente a la más antigua y el ordenamiento estable conserva ese orden
+        solicitudes.sort(Comparator.comparing(solicitud -> !esPendiente(solicitud)));
+        return solicitudes;
+    }
+
+    @Override
+    public SolicitudDominio consultarUnaRecibida(UUID usuarioTecnicoId, UUID solicitudId) {
+        if (UtilUUID.esValorDefecto(solicitudId)) {
+            throw ManosALaObraNegocioExcepcion.crear(
+                    CatalogoMensajes.SolicitudNegocioImpl.USUARIO_ERROR_SOLICITUD_NO_ENCONTRADA);
+        }
+        SolicitudEntidad filtro = new SolicitudEntidad();
+        filtro.setId(solicitudId);
+        filtro.getTecnico().setId(consultarIdTecnico(usuarioTecnicoId));
+        return obtenerUnica(daoFactory.obtenerSolicitudDAO().consultarPorFiltro(filtro));
+    }
+
+    // CU10: al abrir "Solicitudes recibidas" el aviso de solicitudes nuevas deja de mostrarse
+    @Override
+    public void marcarRecibidasComoNotificadas(UUID usuarioTecnicoId) {
+        daoFactory.obtenerSolicitudDAO().marcarComoNotificadas(consultarIdTecnico(usuarioTecnicoId));
+    }
+
+    // La sesión guarda el usuario; las solicitudes apuntan al registro del técnico
+    private UUID consultarIdTecnico(UUID usuarioTecnicoId) {
+        if (UtilUUID.esValorDefecto(usuarioTecnicoId)) {
+            throw ManosALaObraNegocioExcepcion.crear(
+                    CatalogoMensajes.SolicitudNegocioImpl.USUARIO_ERROR_REGISTRO_TECNICO_NO_ENCONTRADO);
+        }
+        TecnicoEntidad tecnico = daoFactory.obtenerTecnicoDAO().consultarPorUsuario(usuarioTecnicoId);
+        if (UtilUUID.esValorDefecto(tecnico.getId())) {
+            throw ManosALaObraNegocioExcepcion.crear(
+                    CatalogoMensajes.SolicitudNegocioImpl.USUARIO_ERROR_REGISTRO_TECNICO_NO_ENCONTRADO);
+        }
+        return tecnico.getId();
+    }
+
+    private boolean esPendiente(SolicitudDominio solicitud) {
+        return EstadoSolicitudDominio.PENDIENTE.equals(solicitud.getEstadoSolicitud().getNombre());
+    }
+
+    private SolicitudDominio obtenerUnica(List<SolicitudEntidad> encontradas) {
         if (encontradas.isEmpty()) {
             throw ManosALaObraNegocioExcepcion.crear(
                     CatalogoMensajes.SolicitudNegocioImpl.USUARIO_ERROR_SOLICITUD_NO_ENCONTRADA);

@@ -33,6 +33,11 @@ public final class SolicitudMySqlDAO extends SqlDAO implements SolicitudDAO {
             VALUES (?, ?, ?, ?, ?, ?, ?)
             """;
 
+    // HU-10: el técnico ya vio el aviso de sus solicitudes nuevas
+    private static final String MARCAR_NOTIFICADAS = """
+            UPDATE Solicitud SET notificada = TRUE WHERE tecnico_id = ? AND notificada = FALSE
+            """;
+
     // No trae teléfonos: los datos de contacto se entregan aparte cuando la solicitud se acepta (HU-13)
     private static final String SELECCIONAR = """
             SELECT s.id, s.descripcion, s.fecha_hora, s.motivo_rechazo, s.notificada, s.respondida_en, s.creada_en,
@@ -81,6 +86,22 @@ public final class SolicitudMySqlDAO extends SqlDAO implements SolicitudDAO {
     }
 
     @Override
+    public void marcarComoNotificadas(UUID tecnicoId) {
+        try (PreparedStatement sentencia = getConexion().prepareStatement(MARCAR_NOTIFICADAS)) {
+            sentencia.setString(1, tecnicoId.toString());
+            sentencia.executeUpdate();
+        } catch (SQLException excepcion) {
+            throw ManosALaObraDatosExcepcion.crear(
+                    CatalogoMensajes.SolicitudMySqlDAO.USUARIO_ERROR_PROBLEMA_MARCANDO_NOTIFICADAS,
+                    excepcion.getMessage(), excepcion);
+        } catch (Exception excepcion) {
+            throw ManosALaObraDatosExcepcion.crear(
+                    CatalogoMensajes.SolicitudMySqlDAO.USUARIO_ERROR_PROBLEMA_NO_CONTROLADO_MARCANDO_NOTIFICADAS,
+                    excepcion.getMessage(), excepcion);
+        }
+    }
+
+    @Override
     public SolicitudEntidad consultarPorId(UUID id) {
         SolicitudEntidad filtro = new SolicitudEntidad();
         filtro.setId(id);
@@ -101,7 +122,7 @@ public final class SolicitudMySqlDAO extends SqlDAO implements SolicitudDAO {
             consulta.append(" AND es.nombre = ?");
             parametros.add(filtroSeguro.getEstadoSolicitud().getNombre());
         }
-        // CU19: de la más reciente a la más antigua
+        // CU19 y CU18: de la más reciente a la más antigua
         consulta.append(" ORDER BY s.creada_en DESC, s.fecha_hora DESC");
 
         return ejecutarConsulta(consulta.toString(), parametros);

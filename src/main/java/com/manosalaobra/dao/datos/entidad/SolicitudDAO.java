@@ -6,4 +6,6 @@ import com.manosalaobra.entidad.SolicitudEntidad;
 import java.util.UUID;
 
 public interface SolicitudDAO extends CrearDAO<SolicitudEntidad>, ConsultarDAO<SolicitudEntidad, UUID> {
+
+    void marcarComoNotificadas(UUID tecnicoId);
 }
