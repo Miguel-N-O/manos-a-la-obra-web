@@ -19,4 +19,6 @@ public interface SolicitudFachada {
     void marcarRecibidasComoNotificadas(UUID usuarioTecnicoId);
 
     SolicitudDTO aceptar(UUID usuarioTecnicoId, UUID solicitudId);
+
+    SolicitudDTO rechazar(UUID usuarioTecnicoId, UUID solicitudId, SolicitudDTO respuesta);
 }

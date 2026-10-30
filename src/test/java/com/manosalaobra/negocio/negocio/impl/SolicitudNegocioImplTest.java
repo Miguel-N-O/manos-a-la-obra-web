@@ -36,6 +36,7 @@ class SolicitudNegocioImplTest {
     private static final UUID ID_BARRIO = UtilUUID.generar();
     private static final UUID ID_PENDIENTE = UtilUUID.generar();
     private static final UUID ID_ACEPTADA = UtilUUID.generar();
+    private static final UUID ID_RECHAZADA = UtilUUID.generar();
 
     // Guarda en memoria lo que se crea y responde las consultas filtrando por id y ciudadano
     private static final class SolicitudDAOEnMemoria implements SolicitudDAO {
@@ -167,6 +168,9 @@ class SolicitudNegocioImplTest {
                 }
                 if (EstadoSolicitudDominio.ACEPTADA.equals(filtro.getNombre())) {
                     return List.of(new EstadoSolicitudEntidad(ID_ACEPTADA, EstadoSolicitudDominio.ACEPTADA, true));
+                }
+                if (EstadoSolicitudDominio.RECHAZADA.equals(filtro.getNombre())) {
+                    return List.of(new EstadoSolicitudEntidad(ID_RECHAZADA, EstadoSolicitudDominio.RECHAZADA, true));
                 }
                 return List.of();
             }
@@ -339,6 +343,54 @@ class SolicitudNegocioImplTest {
         // El ciudadano no recibe su propio teléfono en "Mis solicitudes"
         assertEquals("", negocio.consultarUnaDelCiudadano(ciudadano, solicitud.getId())
                 .getCiudadano().getNumeroTelefono());
+    }
+
+    @Test
+    void rechazaUnaSolicitudPendienteGuardandoElMotivo() {
+        SolicitudDominio solicitud = negocio.crear(UtilUUID.generar(), solicitudPara(ID_TECNICO).build());
+
+        SolicitudDominio rechazada = negocio.rechazar(ID_USUARIO_TECNICO, solicitud.getId(), "FUERA_DE_ZONA");
+
+        assertEquals(EstadoSolicitudDominio.RECHAZADA, rechazada.getEstadoSolicitud().getNombre());
+        SolicitudEntidad guardada = solicitudDAO.solicitudes.get(0);
+        assertEquals(ID_RECHAZADA, guardada.getEstadoSolicitud().getId());
+        assertEquals("FUERA_DE_ZONA", guardada.getMotivoRechazo());
+        assertFalse(UtilFecha.esValorDefecto(guardada.getRespondidaEn()));
+    }
+
+    @Test
+    void rechazaSinMotivoPorqueEsOpcional() {
+        SolicitudDominio solicitud = negocio.crear(UtilUUID.generar(), solicitudPara(ID_TECNICO).build());
+
+        negocio.rechazar(ID_USUARIO_TECNICO, solicitud.getId(), "");
+
+        assertEquals(ID_RECHAZADA, solicitudDAO.solicitudes.get(0).getEstadoSolicitud().getId());
+        assertEquals("", solicitudDAO.solicitudes.get(0).getMotivoRechazo());
+    }
+
+    @Test
+    void noRechazaConUnMotivoQueNoEstaEnLaLista() {
+        SolicitudDominio solicitud = negocio.crear(UtilUUID.generar(), solicitudPara(ID_TECNICO).build());
+
+        ManosALaObraExcepcion excepcion = assertThrows(ManosALaObraExcepcion.class,
+                () -> negocio.rechazar(ID_USUARIO_TECNICO, solicitud.getId(), "NO_ME_GUSTA"));
+        assertEquals("El motivo del rechazo no es válido. Elige uno de la lista o deja el campo vacío.",
+                excepcion.getMensajeUsuario());
+        assertEquals(ID_PENDIENTE, solicitudDAO.solicitudes.get(0).getEstadoSolicitud().getId());
+    }
+
+    @Test
+    void noRechazaUnaSolicitudQueYaFueAceptadaYNoMuestraElContacto() {
+        SolicitudDominio aceptada = negocio.crear(UtilUUID.generar(), solicitudPara(ID_TECNICO).build());
+        negocio.aceptar(ID_USUARIO_TECNICO, aceptada.getId());
+        ManosALaObraExcepcion excepcion = assertThrows(ManosALaObraExcepcion.class,
+                () -> negocio.rechazar(ID_USUARIO_TECNICO, aceptada.getId(), "OTRO"));
+        assertEquals("Esta solicitud ya fue respondida y no puede modificarse.", excepcion.getMensajeUsuario());
+
+        // CU12: al rechazar no se habilitan los datos de contacto
+        SolicitudDominio otra = negocio.crear(UtilUUID.generar(), solicitudPara(ID_TECNICO).build());
+        solicitudDAO.solicitudes.get(1).getCiudadano().setNumeroTelefono("3001234567");
+        assertEquals("", negocio.rechazar(ID_USUARIO_TECNICO, otra.getId(), "OTRO").getCiudadano().getNumeroTelefono());
     }
 
     @Test
