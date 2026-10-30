@@ -138,6 +138,17 @@ public final class CatalogoMensajes {
         public static final String USUARIO_ERROR_ESTADO_NO_CONFIGURADO =
                 "No pudimos crear tu cuenta porque falta configurar los estados de cuenta. Avisa al administrador.";
 
+        public static final String USUARIO_ERROR_CAMPO_TIPO_DOCUMENTO = "el tipo de documento";
+        public static final String USUARIO_ERROR_CAMPO_DOCUMENTO = "el número de documento";
+        public static final String USUARIO_ERROR_TIPO_DOCUMENTO_NO_VALIDO =
+                "El tipo de documento debe ser cédula de ciudadanía o cédula de extranjería.";
+        public static final String USUARIO_ERROR_DOCUMENTO_FORMATO_NO_VALIDO =
+                "El número de documento solo puede tener letras y números, sin espacios ni puntos.";
+        public static final String USUARIO_ERROR_DOCUMENTO_LONGITUD_NO_VALIDA =
+                "El número de documento es muy largo (máximo 30 caracteres).";
+        public static final String USUARIO_ERROR_DOCUMENTO_YA_REGISTRADO =
+                "Ya existe una cuenta registrada con este correo o documento.";
+
         public static final String USUARIO_ERROR_DATOS_INICIO_SESION_FALTANTES =
                 "Escribe tu correo y tu contraseña.";
         public static final String USUARIO_ERROR_CREDENCIALES_INCORRECTAS = "Correo o contraseña incorrectos.";
@@ -148,6 +159,9 @@ public final class CatalogoMensajes {
 
     public static final class UsuarioFachadaImpl {
         public static final String USUARIO_ERROR_PROBLEMA_INESPERADO_REGISTRANDO_CIUDADANO =
+                "No pudimos crear tu cuenta. Intenta de nuevo en unos minutos.";
+
+        public static final String USUARIO_ERROR_PROBLEMA_INESPERADO_REGISTRANDO_TECNICO =
                 "No pudimos crear tu cuenta. Intenta de nuevo en unos minutos.";
 
         public static final String USUARIO_ERROR_PROBLEMA_INESPERADO_INICIANDO_SESION =
@@ -173,6 +187,8 @@ public final class CatalogoMensajes {
 
     public static final class UsuarioController {
         public static final String USUARIO_CIUDADANO_REGISTRADO = "¡Cuenta creada! Ya puedes iniciar sesión.";
+        public static final String USUARIO_TECNICO_REGISTRADO =
+                "Tu cuenta de técnico se creó correctamente. Completa tu perfil para aparecer en las búsquedas.";
 
         private UsuarioController() {
         }
@@ -203,6 +219,12 @@ public final class CatalogoMensajes {
                 "No pudimos consultar los técnicos. Intenta de nuevo en unos minutos.";
         public static final String USUARIO_ERROR_PROBLEMA_NO_CONTROLADO_CONSULTANDO_TECNICO =
                 "Ocurrió un problema inesperado al consultar los técnicos. Avisa al administrador.";
+        public static final String USUARIO_ERROR_DOCUMENTO_YA_REGISTRADO =
+                "Ya existe una cuenta registrada con este correo o documento.";
+        public static final String USUARIO_ERROR_PROBLEMA_CREANDO_TECNICO =
+                "No pudimos guardar tu cuenta de técnico. Revisa tus datos e intenta de nuevo.";
+        public static final String USUARIO_ERROR_PROBLEMA_NO_CONTROLADO_CREANDO_TECNICO =
+                "Ocurrió un problema inesperado al guardar tu cuenta de técnico. Intenta de nuevo o avisa al administrador.";
 
         private TecnicoMySqlDAO() {
         }

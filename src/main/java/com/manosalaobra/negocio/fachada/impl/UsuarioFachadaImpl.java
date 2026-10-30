@@ -1,9 +1,12 @@
 package com.manosalaobra.negocio.fachada.impl;
 
 import com.manosalaobra.dao.factoria.DAOFactory;
+import com.manosalaobra.dominio.TecnicoDominio;
 import com.manosalaobra.dominio.UsuarioDominio;
+import com.manosalaobra.dto.TecnicoDTO;
 import com.manosalaobra.dto.UsuarioDTO;
 import com.manosalaobra.negocio.fachada.UsuarioFachada;
+import com.manosalaobra.negocio.fachada.ensamblador.impl.TecnicoEnsambladorDTO;
 import com.manosalaobra.negocio.fachada.ensamblador.impl.UsuarioEnsambladorDTO;
 import com.manosalaobra.negocio.negocio.UsuarioNegocio;
 import com.manosalaobra.negocio.negocio.impl.UsuarioNegocioImpl;
@@ -47,6 +50,33 @@ public final class UsuarioFachadaImpl implements UsuarioFachada {
             REGISTRO.error("Problema inesperado registrando un ciudadano", excepcion);
             throw ManosALaObraFachadaExcepcion.crear(
                     CatalogoMensajes.UsuarioFachadaImpl.USUARIO_ERROR_PROBLEMA_INESPERADO_REGISTRANDO_CIUDADANO,
+                    excepcion.getMessage(), excepcion);
+        } finally {
+            daoFactory.cerrarConexion();
+        }
+    }
+
+    @Override
+    public UsuarioDTO registrarTecnico(TecnicoDTO tecnico) {
+        boolean transaccionIniciada = false;
+        try {
+            daoFactory.iniciarTransaccion();
+            transaccionIniciada = true;
+
+            TecnicoDominio tecnicoDominio = TecnicoEnsambladorDTO.getInstancia().convertirADominio(tecnico);
+            TecnicoDominio tecnicoRegistrado = usuarioNegocio.registrarTecnico(tecnicoDominio);
+
+            daoFactory.confirmarTransaccion();
+            transaccionIniciada = false;
+            return UsuarioEnsambladorDTO.getInstancia().convertirADTO(tecnicoRegistrado.getUsuario());
+        } catch (ManosALaObraExcepcion excepcion) {
+            cancelarSiHaceFalta(transaccionIniciada);
+            throw excepcion;
+        } catch (Exception excepcion) {
+            cancelarSiHaceFalta(transaccionIniciada);
+            REGISTRO.error("Problema inesperado registrando un técnico", excepcion);
+            throw ManosALaObraFachadaExcepcion.crear(
+                    CatalogoMensajes.UsuarioFachadaImpl.USUARIO_ERROR_PROBLEMA_INESPERADO_REGISTRANDO_TECNICO,
                     excepcion.getMessage(), excepcion);
         } finally {
             daoFactory.cerrarConexion();

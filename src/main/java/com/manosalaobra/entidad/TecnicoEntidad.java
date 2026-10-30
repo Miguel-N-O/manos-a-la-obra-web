@@ -15,6 +15,7 @@ public final class TecnicoEntidad {
     private BarrioEntidad barrio;
     private BigDecimal tarifa;
     private int experiencia;
+    private String tipoDocumento;
     private String documento;
     private BigDecimal promedio;
 
@@ -25,6 +26,7 @@ public final class TecnicoEntidad {
         setBarrio(new BarrioEntidad());
         setTarifa(BigDecimal.ZERO);
         setExperiencia(0);
+        setTipoDocumento(UtilTexto.VACIO);
         setDocumento(UtilTexto.VACIO);
         setPromedio(BigDecimal.ZERO);
     }
@@ -36,6 +38,7 @@ public final class TecnicoEntidad {
         setBarrio(barrio);
         setTarifa(tarifa);
         setExperiencia(experiencia);
+        setTipoDocumento(UtilTexto.VACIO);
         setDocumento(documento);
         setPromedio(promedio);
     }
@@ -86,6 +89,14 @@ public final class TecnicoEntidad {
 
     public void setExperiencia(int experiencia) {
         this.experiencia = experiencia;
+    }
+
+    public String getTipoDocumento() {
+        return tipoDocumento;
+    }
+
+    public void setTipoDocumento(String tipoDocumento) {
+        this.tipoDocumento = UtilTexto.getUtilTexto().quitarEspacioEnBlanco(tipoDocumento);
     }
 
     public String getDocumento() {

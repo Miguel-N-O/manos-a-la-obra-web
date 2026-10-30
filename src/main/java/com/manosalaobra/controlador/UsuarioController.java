@@ -2,6 +2,7 @@ package com.manosalaobra.controlador;
 
 import com.manosalaobra.controlador.respuesta.Respuesta;
 import com.manosalaobra.controlador.respuesta.RespuestaOk;
+import com.manosalaobra.dto.TecnicoDTO;
 import com.manosalaobra.dto.UsuarioDTO;
 import com.manosalaobra.negocio.fachada.UsuarioFachada;
 import com.manosalaobra.negocio.fachada.impl.UsuarioFachadaImpl;
@@ -24,5 +25,13 @@ public class UsuarioController extends AbstractRestController {
         UsuarioDTO ciudadanoRegistrado = usuarioFachada.registrarCiudadano(usuario);
         return ResponseEntity.status(HttpStatus.CREATED).body(RespuestaOk.crear(
                 ciudadanoRegistrado, CatalogoMensajes.UsuarioController.USUARIO_CIUDADANO_REGISTRADO));
+    }
+
+    @PostMapping("/tecnicos")
+    public ResponseEntity<Respuesta<UsuarioDTO>> registrarTecnico(@RequestBody TecnicoDTO tecnico) {
+        UsuarioFachada usuarioFachada = new UsuarioFachadaImpl();
+        UsuarioDTO tecnicoRegistrado = usuarioFachada.registrarTecnico(tecnico);
+        return ResponseEntity.status(HttpStatus.CREATED).body(RespuestaOk.crear(
+                tecnicoRegistrado, CatalogoMensajes.UsuarioController.USUARIO_TECNICO_REGISTRADO));
     }
 }

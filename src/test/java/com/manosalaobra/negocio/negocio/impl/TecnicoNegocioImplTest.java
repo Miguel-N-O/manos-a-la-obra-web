@@ -45,6 +45,15 @@ class TecnicoNegocioImplTest {
         public List<TecnicoEntidad> consultarTodos() {
             return tecnicos;
         }
+
+        @Override
+        public void crear(TecnicoEntidad entidad) {
+        }
+
+        @Override
+        public boolean existeDocumento(String documento) {
+            return false;
+        }
     }
 
     private static TecnicoEntidad tecnico(String nombre, String promedio) {

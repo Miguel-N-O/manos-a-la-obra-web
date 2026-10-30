@@ -21,7 +21,7 @@ public final class TecnicoEnsambladorEntidad implements EnsambladorEntidad<Tecni
     public TecnicoEntidad convertirAEntidad(TecnicoDominio dominio) {
         TecnicoDominio dominioSeguro = UtilObjeto.obtenerValorDefectoSiValorOriginalEsNulo(
                 dominio, new TecnicoDominio.Builder().build());
-        return new TecnicoEntidad(
+        TecnicoEntidad entidad = new TecnicoEntidad(
                 dominioSeguro.getId(),
                 UsuarioEnsambladorEntidad.getInstancia().convertirAEntidad(dominioSeguro.getUsuario()),
                 ServicioEnsambladorEntidad.getInstancia().convertirAEntidad(dominioSeguro.getServicio()),
@@ -30,6 +30,8 @@ public final class TecnicoEnsambladorEntidad implements EnsambladorEntidad<Tecni
                 dominioSeguro.getExperiencia(),
                 dominioSeguro.getDocumento(),
                 dominioSeguro.getPromedio());
+        entidad.setTipoDocumento(dominioSeguro.getTipoDocumento());
+        return entidad;
     }
 
     @Override
@@ -43,6 +45,7 @@ public final class TecnicoEnsambladorEntidad implements EnsambladorEntidad<Tecni
                 .barrio(BarrioEnsambladorEntidad.getInstancia().convertirADominio(entidadSegura.getBarrio()))
                 .tarifa(entidadSegura.getTarifa())
                 .experiencia(entidadSegura.getExperiencia())
+                .tipoDocumento(entidadSegura.getTipoDocumento())
                 .documento(entidadSegura.getDocumento())
                 .promedio(entidadSegura.getPromedio())
                 .build();
