@@ -1,11 +1,15 @@
 package com.manosalaobra.dao.factoria.impl;
 
 import com.manosalaobra.dao.datos.entidad.BarrioDAO;
+import com.manosalaobra.dao.datos.entidad.EstadoSolicitudDAO;
 import com.manosalaobra.dao.datos.entidad.ServicioDAO;
+import com.manosalaobra.dao.datos.entidad.SolicitudDAO;
 import com.manosalaobra.dao.datos.entidad.TecnicoDAO;
 import com.manosalaobra.dao.datos.entidad.mysql.BarrioMySqlDAO;
+import com.manosalaobra.dao.datos.entidad.mysql.EstadoSolicitudMySqlDAO;
 import com.manosalaobra.dao.datos.entidad.mysql.IndicativoPaisMySqlDAO;
 import com.manosalaobra.dao.datos.entidad.mysql.ServicioMySqlDAO;
+import com.manosalaobra.dao.datos.entidad.mysql.SolicitudMySqlDAO;
 import com.manosalaobra.dao.datos.entidad.mysql.TecnicoMySqlDAO;
 
 import com.manosalaobra.dao.datos.entidad.IndicativoPaisDAO;
@@ -91,6 +95,16 @@ public final class MySqlDAOFactory extends DAOFactory {
     @Override
     public TecnicoDAO obtenerTecnicoDAO() {
         return new TecnicoMySqlDAO(getConexion());
+    }
+
+    @Override
+    public EstadoSolicitudDAO obtenerEstadoSolicitudDAO() {
+        return new EstadoSolicitudMySqlDAO(getConexion());
+    }
+
+    @Override
+    public SolicitudDAO obtenerSolicitudDAO() {
+        return new SolicitudMySqlDAO(getConexion());
     }
 
     private static void asegurarConfiguracion(String url, String usuario) {
