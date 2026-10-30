@@ -11,4 +11,10 @@ public interface SolicitudFachada {
     List<SolicitudDTO> consultarDelCiudadano(UUID ciudadanoId);
 
     SolicitudDTO consultarUnaDelCiudadano(UUID ciudadanoId, UUID solicitudId);
+
+    List<SolicitudDTO> consultarRecibidas(UUID usuarioTecnicoId);
+
+    SolicitudDTO consultarUnaRecibida(UUID usuarioTecnicoId, UUID solicitudId);
+
+    void marcarRecibidasComoNotificadas(UUID usuarioTecnicoId);
 }

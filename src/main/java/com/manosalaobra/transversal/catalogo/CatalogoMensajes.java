@@ -327,6 +327,10 @@ public final class CatalogoMensajes {
                 "No pudimos consultar las solicitudes. Intenta de nuevo en unos minutos.";
         public static final String USUARIO_ERROR_PROBLEMA_NO_CONTROLADO_CONSULTANDO_SOLICITUD =
                 "Ocurrió un problema inesperado al consultar las solicitudes. Avisa al administrador.";
+        public static final String USUARIO_ERROR_PROBLEMA_MARCANDO_NOTIFICADAS =
+                "No pudimos actualizar el aviso de solicitudes nuevas. Intenta de nuevo en unos minutos.";
+        public static final String USUARIO_ERROR_PROBLEMA_NO_CONTROLADO_MARCANDO_NOTIFICADAS =
+                "Ocurrió un problema inesperado al actualizar el aviso de solicitudes nuevas. Avisa al administrador.";
 
         private SolicitudMySqlDAO() {
         }
@@ -347,6 +351,8 @@ public final class CatalogoMensajes {
         public static final String USUARIO_ERROR_SOLICITUD_NO_ENCONTRADA = "No encontramos esa solicitud.";
         public static final String USUARIO_ERROR_ESTADO_NO_CONFIGURADO =
                 "No pudimos enviar tu solicitud porque falta configurar los estados de solicitud. Avisa al administrador.";
+        public static final String USUARIO_ERROR_REGISTRO_TECNICO_NO_ENCONTRADO =
+                "No encontramos tu registro de técnico. Cierra sesión, vuelve a entrar o avisa al administrador.";
 
         private SolicitudNegocioImpl() {
         }
@@ -357,6 +363,8 @@ public final class CatalogoMensajes {
                 "No fue posible enviar tu solicitud. Por favor intenta nuevamente.";
         public static final String USUARIO_ERROR_PROBLEMA_INESPERADO_CONSULTANDO_SOLICITUDES =
                 "No pudimos cargar tus solicitudes. Intenta de nuevo en unos minutos.";
+        public static final String USUARIO_ERROR_PROBLEMA_INESPERADO_MARCANDO_NOTIFICADAS =
+                "No pudimos actualizar el aviso de solicitudes nuevas. Intenta de nuevo en unos minutos.";
 
         private SolicitudFachadaImpl() {
         }
@@ -370,6 +378,11 @@ public final class CatalogoMensajes {
         public static final String USUARIO_ERROR_NO_HAY_SESION = "Inicia sesión para solicitar servicios.";
         public static final String USUARIO_ERROR_SOLO_CIUDADANOS =
                 "Solo los ciudadanos pueden solicitar servicios y ver sus solicitudes.";
+        public static final String USUARIO_SIN_SOLICITUDES_RECIBIDAS = "Aún no has recibido solicitudes de servicio.";
+        public static final String USUARIO_ERROR_NO_HAY_SESION_TECNICO =
+                "Inicia sesión para ver las solicitudes que has recibido.";
+        public static final String USUARIO_ERROR_SOLO_TECNICOS =
+                "Solo los técnicos pueden ver las solicitudes recibidas.";
 
         private SolicitudController() {
         }

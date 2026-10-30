@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -55,6 +56,46 @@ public class SolicitudController extends AbstractRestController {
         return ResponseEntity.ok(RespuestaOk.crear(solicitudes));
     }
 
+    // HU-10 / CU18: solicitudes dirigidas al técnico de la sesión, con las pendientes primero
+    @GetMapping("/recibidas")
+    public ResponseEntity<Respuesta<SolicitudDTO>> consultarRecibidas(HttpServletRequest peticion) {
+        ResponseEntity<Respuesta<SolicitudDTO>> sinPermiso = validarSesionDeTecnico(peticion);
+        if (sinPermiso != null) {
+            return sinPermiso;
+        }
+        SolicitudFachada solicitudFachada = new SolicitudFachadaImpl();
+        List<SolicitudDTO> solicitudes = solicitudFachada.consultarRecibidas(SesionUsuario.idActual(peticion));
+        if (solicitudes.isEmpty()) {
+            return ResponseEntity.ok(RespuestaOk.crear(solicitudes,
+                    List.of(CatalogoMensajes.SolicitudController.USUARIO_SIN_SOLICITUDES_RECIBIDAS)));
+        }
+        return ResponseEntity.ok(RespuestaOk.crear(solicitudes));
+    }
+
+    // CU10: el técnico abrió sus solicitudes, así que las nuevas dejan de avisarse
+    @PutMapping("/recibidas/notificadas")
+    public ResponseEntity<Respuesta<SolicitudDTO>> marcarRecibidasComoNotificadas(HttpServletRequest peticion) {
+        ResponseEntity<Respuesta<SolicitudDTO>> sinPermiso = validarSesionDeTecnico(peticion);
+        if (sinPermiso != null) {
+            return sinPermiso;
+        }
+        SolicitudFachada solicitudFachada = new SolicitudFachadaImpl();
+        solicitudFachada.marcarRecibidasComoNotificadas(SesionUsuario.idActual(peticion));
+        return ResponseEntity.ok(RespuestaOk.crear());
+    }
+
+    @GetMapping("/recibidas/{id}")
+    public ResponseEntity<Respuesta<SolicitudDTO>> consultarUnaRecibida(@PathVariable("id") UUID id,
+            HttpServletRequest peticion) {
+        ResponseEntity<Respuesta<SolicitudDTO>> sinPermiso = validarSesionDeTecnico(peticion);
+        if (sinPermiso != null) {
+            return sinPermiso;
+        }
+        SolicitudFachada solicitudFachada = new SolicitudFachadaImpl();
+        return ResponseEntity.ok(RespuestaOk.crear(
+                List.of(solicitudFachada.consultarUnaRecibida(SesionUsuario.idActual(peticion), id))));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Respuesta<SolicitudDTO>> consultarUna(@PathVariable("id") UUID id,
             HttpServletRequest peticion) {
@@ -76,6 +117,19 @@ public class SolicitudController extends AbstractRestController {
         if (!RolDominio.CIUDADANO.equals(rol)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(RespuestaError.crear(
                     CatalogoMensajes.SolicitudController.USUARIO_ERROR_SOLO_CIUDADANOS));
+        }
+        return null;
+    }
+
+    private ResponseEntity<Respuesta<SolicitudDTO>> validarSesionDeTecnico(HttpServletRequest peticion) {
+        String rol = SesionUsuario.rolActual(peticion);
+        if (rol == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(RespuestaError.crear(
+                    CatalogoMensajes.SolicitudController.USUARIO_ERROR_NO_HAY_SESION_TECNICO));
+        }
+        if (!RolDominio.TECNICO.equals(rol)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(RespuestaError.crear(
+                    CatalogoMensajes.SolicitudController.USUARIO_ERROR_SOLO_TECNICOS));
         }
         return null;
     }
