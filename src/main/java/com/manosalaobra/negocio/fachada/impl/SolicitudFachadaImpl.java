@@ -173,6 +173,33 @@ public final class SolicitudFachadaImpl implements SolicitudFachada {
         }
     }
 
+    @Override
+    public SolicitudDTO rechazar(UUID usuarioTecnicoId, UUID solicitudId, SolicitudDTO respuesta) {
+        boolean transaccionIniciada = false;
+        try {
+            daoFactory.iniciarTransaccion();
+            transaccionIniciada = true;
+
+            String motivoRechazo = SolicitudEnsambladorDTO.getInstancia().convertirADominio(respuesta).getMotivoRechazo();
+            SolicitudDominio rechazada = solicitudNegocio.rechazar(usuarioTecnicoId, solicitudId, motivoRechazo);
+
+            daoFactory.confirmarTransaccion();
+            transaccionIniciada = false;
+            return SolicitudEnsambladorDTO.getInstancia().convertirADTO(rechazada);
+        } catch (ManosALaObraExcepcion excepcion) {
+            cancelarSiHaceFalta(transaccionIniciada);
+            throw excepcion;
+        } catch (Exception excepcion) {
+            cancelarSiHaceFalta(transaccionIniciada);
+            REGISTRO.error("Problema inesperado rechazando una solicitud", excepcion);
+            throw ManosALaObraFachadaExcepcion.crear(
+                    CatalogoMensajes.SolicitudFachadaImpl.USUARIO_ERROR_PROBLEMA_INESPERADO_RECHAZANDO_SOLICITUD,
+                    excepcion.getMessage(), excepcion);
+        } finally {
+            daoFactory.cerrarConexion();
+        }
+    }
+
     private void cancelarSiHaceFalta(boolean transaccionIniciada) {
         if (transaccionIniciada) {
             daoFactory.cancelarTransaccion();

@@ -357,6 +357,8 @@ public final class CatalogoMensajes {
                 "No pudimos procesar la solicitud porque falta configurar los estados de solicitud. Avisa al administrador.";
         public static final String USUARIO_ERROR_SOLICITUD_YA_RESPONDIDA =
                 "Esta solicitud ya fue respondida y no puede modificarse.";
+        public static final String USUARIO_ERROR_MOTIVO_RECHAZO_NO_VALIDO =
+                "El motivo del rechazo no es válido. Elige uno de la lista o deja el campo vacío.";
         public static final String USUARIO_ERROR_REGISTRO_TECNICO_NO_ENCONTRADO =
                 "No encontramos tu registro de técnico. Cierra sesión, vuelve a entrar o avisa al administrador.";
 
@@ -373,6 +375,8 @@ public final class CatalogoMensajes {
                 "No pudimos actualizar el aviso de solicitudes nuevas. Intenta de nuevo en unos minutos.";
         public static final String USUARIO_ERROR_PROBLEMA_INESPERADO_ACEPTANDO_SOLICITUD =
                 "No fue posible aceptar la solicitud. Por favor intenta nuevamente.";
+        public static final String USUARIO_ERROR_PROBLEMA_INESPERADO_RECHAZANDO_SOLICITUD =
+                "No fue posible rechazar la solicitud. Por favor intenta nuevamente.";
 
         private SolicitudFachadaImpl() {
         }
@@ -393,6 +397,7 @@ public final class CatalogoMensajes {
                 "Solo los técnicos pueden ver y responder las solicitudes recibidas.";
         public static final String USUARIO_SOLICITUD_ACEPTADA =
                 "Aceptaste la solicitud. El ciudadano ya puede ver tus datos de contacto para coordinar el trabajo.";
+        public static final String USUARIO_SOLICITUD_RECHAZADA = "Rechazaste la solicitud. Le informaremos al ciudadano.";
 
         private SolicitudController() {
         }

@@ -19,4 +19,6 @@ public interface SolicitudNegocio {
     void marcarRecibidasComoNotificadas(UUID usuarioTecnicoId);
 
     SolicitudDominio aceptar(UUID usuarioTecnicoId, UUID solicitudId);
+
+    SolicitudDominio rechazar(UUID usuarioTecnicoId, UUID solicitudId, String motivoRechazo);
 }

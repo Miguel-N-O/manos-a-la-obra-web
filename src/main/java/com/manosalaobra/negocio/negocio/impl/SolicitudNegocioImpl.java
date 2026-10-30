@@ -12,6 +12,7 @@ import com.manosalaobra.negocio.negocio.ensamblador.impl.EstadoSolicitudEnsambla
 import com.manosalaobra.negocio.negocio.ensamblador.impl.SolicitudEnsambladorEntidad;
 import com.manosalaobra.negocio.negocio.reglas.impl.barrio.AsegurarBarrioExisteRegla;
 import com.manosalaobra.negocio.negocio.reglas.impl.solicitud.AsegurarSolicitudPendienteRegla;
+import com.manosalaobra.negocio.negocio.reglas.impl.solicitud.ValidarMotivoRechazoRegla;
 import com.manosalaobra.negocio.negocio.reglas.impl.solicitud.ValidarDatosCrearSolicitudRegla;
 import com.manosalaobra.negocio.negocio.reglas.impl.tecnico.AsegurarTecnicoDisponibleRegla;
 import com.manosalaobra.transversal.catalogo.CatalogoMensajes;
@@ -115,6 +116,23 @@ public final class SolicitudNegocioImpl implements SolicitudNegocio {
                 .build();
         daoFactory.obtenerSolicitudDAO().actualizar(aceptada.getId(),
                 SolicitudEnsambladorEntidad.getInstancia().convertirAEntidad(aceptada));
+        return consultarUnaRecibida(usuarioTecnicoId, solicitudId);
+    }
+
+    // HU-12 / CU12: el técnico rechaza una solicitud suya que sigue PENDIENTE; el motivo es opcional
+    @Override
+    public SolicitudDominio rechazar(UUID usuarioTecnicoId, UUID solicitudId, String motivoRechazo) {
+        SolicitudDominio solicitud = consultarUnaRecibida(usuarioTecnicoId, solicitudId);
+        AsegurarSolicitudPendienteRegla.obtenerInstancia().ejecutar(solicitud);
+        ValidarMotivoRechazoRegla.obtenerInstancia().ejecutar(motivoRechazo);
+
+        SolicitudDominio rechazada = copiar(solicitud)
+                .estadoSolicitud(consultarEstadoPorNombre(EstadoSolicitudDominio.RECHAZADA))
+                .motivoRechazo(motivoRechazo)
+                .respondidaEn(UtilFecha.obtenerFechaHoraActual())
+                .build();
+        daoFactory.obtenerSolicitudDAO().actualizar(rechazada.getId(),
+                SolicitudEnsambladorEntidad.getInstancia().convertirAEntidad(rechazada));
         return consultarUnaRecibida(usuarioTecnicoId, solicitudId);
     }
 
