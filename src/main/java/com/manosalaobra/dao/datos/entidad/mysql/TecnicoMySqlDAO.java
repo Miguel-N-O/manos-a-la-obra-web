@@ -34,8 +34,16 @@ public final class TecnicoMySqlDAO extends SqlDAO implements TecnicoDAO {
 
     private static final String CONTAR_POR_DOCUMENTO = "SELECT COUNT(*) FROM Tecnico WHERE documento = ?";
 
+    // HU-04: el técnico guarda o actualiza su perfil
+    private static final String ACTUALIZAR_PERFIL = """
+            UPDATE Tecnico
+            SET servicio_id = ?, barrio_id = ?, tarifa = ?, tipo_tarifa = ?, experiencia = ?, descripcion = ?
+            WHERE id = ?
+            """;
+
+    // LEFT JOIN para poder leer también al técnico que aún no tiene especialidad ni barrio (HU-04)
     private static final String SELECCIONAR = """
-            SELECT t.id, t.tarifa, t.experiencia, t.promedio,
+            SELECT t.id, t.tarifa, t.tipo_tarifa, t.experiencia, t.descripcion, t.promedio,
                    u.id AS usuario_id, u.nombre AS usuario_nombre,
                    e.id AS estado_usuario_id, e.nombre AS estado_usuario_nombre, e.activo AS estado_usuario_activo,
                    s.id AS servicio_id, s.nombre AS servicio_nombre, s.activo AS servicio_activo,
@@ -44,11 +52,15 @@ public final class TecnicoMySqlDAO extends SqlDAO implements TecnicoDAO {
             FROM Tecnico t
             JOIN Usuario u ON u.id = t.usuario_id
             JOIN EstadoUsuario e ON e.id = u.estado_usuario_id
-            JOIN Servicio s ON s.id = t.servicio_id
-            JOIN Barrio b ON b.id = t.barrio_id
-            JOIN Ciudad c ON c.id = b.ciudad_id
+            LEFT JOIN Servicio s ON s.id = t.servicio_id
+            LEFT JOIN Barrio b ON b.id = t.barrio_id
+            LEFT JOIN Ciudad c ON c.id = b.ciudad_id
             WHERE 1 = 1
             """;
+
+    // HU-02 CA-05 y HU-05 CA-05: en las consultas de los ciudadanos solo cuentan los técnicos con perfil
+    private static final String SOLO_CON_PERFIL =
+            " AND t.servicio_id IS NOT NULL AND t.barrio_id IS NOT NULL AND t.tarifa IS NOT NULL";
 
     public TecnicoMySqlDAO(Connection conexion) {
         super(conexion);
@@ -97,6 +109,36 @@ public final class TecnicoMySqlDAO extends SqlDAO implements TecnicoDAO {
     }
 
     @Override
+    public void actualizar(UUID id, TecnicoEntidad entidad) {
+        try (PreparedStatement sentencia = getConexion().prepareStatement(ACTUALIZAR_PERFIL)) {
+            sentencia.setString(1, entidad.getServicio().getId().toString());
+            sentencia.setString(2, entidad.getBarrio().getId().toString());
+            sentencia.setBigDecimal(3, entidad.getTarifa());
+            sentencia.setString(4, entidad.getTipoTarifa());
+            sentencia.setInt(5, entidad.getExperiencia());
+            sentencia.setString(6, UtilTexto.getUtilTexto().esVacia(entidad.getDescripcion())
+                    ? null : entidad.getDescripcion());
+            sentencia.setString(7, id.toString());
+            sentencia.executeUpdate();
+        } catch (SQLException excepcion) {
+            throw ManosALaObraDatosExcepcion.crear(
+                    CatalogoMensajes.TecnicoMySqlDAO.USUARIO_ERROR_PROBLEMA_ACTUALIZANDO_PERFIL,
+                    excepcion.getMessage(), excepcion);
+        } catch (Exception excepcion) {
+            throw ManosALaObraDatosExcepcion.crear(
+                    CatalogoMensajes.TecnicoMySqlDAO.USUARIO_ERROR_PROBLEMA_NO_CONTROLADO_ACTUALIZANDO_PERFIL,
+                    excepcion.getMessage(), excepcion);
+        }
+    }
+
+    @Override
+    public TecnicoEntidad consultarPorUsuario(UUID usuarioId) {
+        List<TecnicoEntidad> encontrados = ejecutarConsulta(SELECCIONAR + " AND u.id = ?",
+                List.of(usuarioId.toString()));
+        return encontrados.isEmpty() ? new TecnicoEntidad() : encontrados.get(0);
+    }
+
+    @Override
     public TecnicoEntidad consultarPorId(UUID id) {
         TecnicoEntidad filtro = new TecnicoEntidad();
         filtro.setId(id);
@@ -108,7 +150,7 @@ public final class TecnicoMySqlDAO extends SqlDAO implements TecnicoDAO {
     public List<TecnicoEntidad> consultarPorFiltro(TecnicoEntidad filtro) {
         TecnicoEntidad filtroSeguro = UtilObjeto.obtenerValorDefectoSiValorOriginalEsNulo(filtro, new TecnicoEntidad());
         List<String> parametros = new ArrayList<>();
-        StringBuilder consulta = new StringBuilder(SELECCIONAR);
+        StringBuilder consulta = new StringBuilder(SELECCIONAR).append(SOLO_CON_PERFIL);
 
         agregarCondicionDeId(consulta, parametros, "t.id", filtroSeguro.getId());
         agregarCondicionDeId(consulta, parametros, "s.id", filtroSeguro.getServicio().getId());
@@ -166,19 +208,19 @@ public final class TecnicoMySqlDAO extends SqlDAO implements TecnicoDAO {
                 fila.getString("estado_usuario_nombre"),
                 fila.getBoolean("estado_usuario_activo")));
         ServicioEntidad servicio = new ServicioEntidad(
-                UtilUUID.convertirAUUID(fila.getString("servicio_id")),
+                convertirAUUIDOVacio(fila.getString("servicio_id")),
                 fila.getString("servicio_nombre"),
                 fila.getBoolean("servicio_activo"));
         CiudadEntidad ciudad = new CiudadEntidad(
-                UtilUUID.convertirAUUID(fila.getString("ciudad_id")),
+                convertirAUUIDOVacio(fila.getString("ciudad_id")),
                 fila.getString("ciudad_nombre"),
                 fila.getBoolean("ciudad_activo"));
         BarrioEntidad barrio = new BarrioEntidad(
-                UtilUUID.convertirAUUID(fila.getString("barrio_id")),
+                convertirAUUIDOVacio(fila.getString("barrio_id")),
                 ciudad,
                 fila.getString("barrio_nombre"),
                 fila.getBoolean("barrio_activo"));
-        return new TecnicoEntidad(
+        TecnicoEntidad tecnico = new TecnicoEntidad(
                 UtilUUID.convertirAUUID(fila.getString("id")),
                 usuario,
                 servicio,
@@ -187,5 +229,12 @@ public final class TecnicoMySqlDAO extends SqlDAO implements TecnicoDAO {
                 fila.getInt("experiencia"),
                 UtilTexto.VACIO,
                 fila.getBigDecimal("promedio"));
+        tecnico.setTipoTarifa(fila.getString("tipo_tarifa"));
+        tecnico.setDescripcion(fila.getString("descripcion"));
+        return tecnico;
+    }
+
+    private UUID convertirAUUIDOVacio(String uuidTexto) {
+        return UtilUUID.convertirAUUID(UtilUUID.obtenerValorDefectoComoTexto(uuidTexto));
     }
 }

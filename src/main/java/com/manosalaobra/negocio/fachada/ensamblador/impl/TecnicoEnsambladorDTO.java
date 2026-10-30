@@ -32,7 +32,9 @@ public final class TecnicoEnsambladorDTO implements EnsambladorDTO<TecnicoDomini
         dto.setServicio(ServicioEnsambladorDTO.getInstancia().convertirADTO(dominioSeguro.getServicio()));
         dto.setBarrio(BarrioEnsambladorDTO.getInstancia().convertirADTO(dominioSeguro.getBarrio()));
         dto.setTarifa(dominioSeguro.getTarifa());
+        dto.setTipoTarifa(dominioSeguro.getTipoTarifa());
         dto.setExperiencia(dominioSeguro.getExperiencia());
+        dto.setDescripcion(dominioSeguro.getDescripcion());
         dto.setPromedio(dominioSeguro.getPromedio());
         return dto;
     }
@@ -46,7 +48,9 @@ public final class TecnicoEnsambladorDTO implements EnsambladorDTO<TecnicoDomini
                 .servicio(ServicioEnsambladorDTO.getInstancia().convertirADominio(dtoSeguro.getServicio()))
                 .barrio(BarrioEnsambladorDTO.getInstancia().convertirADominio(dtoSeguro.getBarrio()))
                 .tarifa(dtoSeguro.getTarifa())
+                .tipoTarifa(dtoSeguro.getTipoTarifa())
                 .experiencia(dtoSeguro.getExperiencia())
+                .descripcion(dtoSeguro.getDescripcion())
                 .tipoDocumento(dtoSeguro.getTipoDocumento())
                 .documento(dtoSeguro.getDocumento())
                 .promedio(dtoSeguro.getPromedio())

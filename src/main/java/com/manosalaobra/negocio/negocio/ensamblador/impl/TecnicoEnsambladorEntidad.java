@@ -31,6 +31,8 @@ public final class TecnicoEnsambladorEntidad implements EnsambladorEntidad<Tecni
                 dominioSeguro.getDocumento(),
                 dominioSeguro.getPromedio());
         entidad.setTipoDocumento(dominioSeguro.getTipoDocumento());
+        entidad.setTipoTarifa(dominioSeguro.getTipoTarifa());
+        entidad.setDescripcion(dominioSeguro.getDescripcion());
         return entidad;
     }
 
@@ -44,7 +46,9 @@ public final class TecnicoEnsambladorEntidad implements EnsambladorEntidad<Tecni
                 .servicio(ServicioEnsambladorEntidad.getInstancia().convertirADominio(entidadSegura.getServicio()))
                 .barrio(BarrioEnsambladorEntidad.getInstancia().convertirADominio(entidadSegura.getBarrio()))
                 .tarifa(entidadSegura.getTarifa())
+                .tipoTarifa(entidadSegura.getTipoTarifa())
                 .experiencia(entidadSegura.getExperiencia())
+                .descripcion(entidadSegura.getDescripcion())
                 .tipoDocumento(entidadSegura.getTipoDocumento())
                 .documento(entidadSegura.getDocumento())
                 .promedio(entidadSegura.getPromedio())

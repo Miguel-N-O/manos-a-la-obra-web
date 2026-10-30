@@ -14,7 +14,9 @@ public final class TecnicoDTO {
     private ServicioDTO servicio;
     private BarrioDTO barrio;
     private BigDecimal tarifa;
+    private String tipoTarifa;
     private int experiencia;
+    private String descripcion;
     private String tipoDocumento;
     private String documento;
     private BigDecimal promedio;
@@ -25,7 +27,9 @@ public final class TecnicoDTO {
         setServicio(new ServicioDTO());
         setBarrio(new BarrioDTO());
         setTarifa(BigDecimal.ZERO);
+        setTipoTarifa(UtilTexto.VACIO);
         setExperiencia(0);
+        setDescripcion(UtilTexto.VACIO);
         setTipoDocumento(UtilTexto.VACIO);
         setDocumento(UtilTexto.VACIO);
         setPromedio(BigDecimal.ZERO);
@@ -69,6 +73,22 @@ public final class TecnicoDTO {
 
     public void setTarifa(BigDecimal tarifa) {
         this.tarifa = UtilObjeto.obtenerValorDefectoSiValorOriginalEsNulo(tarifa, BigDecimal.ZERO);
+    }
+
+    public String getTipoTarifa() {
+        return tipoTarifa;
+    }
+
+    public void setTipoTarifa(String tipoTarifa) {
+        this.tipoTarifa = UtilTexto.getUtilTexto().quitarEspacioEnBlanco(tipoTarifa);
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = UtilTexto.getUtilTexto().quitarEspacioEnBlanco(descripcion);
     }
 
     public int getExperiencia() {

@@ -13,12 +13,18 @@ public final class TecnicoDominio {
     public static final String CEDULA_CIUDADANIA = "CC";
     public static final String CEDULA_EXTRANJERIA = "CE";
 
+    // Tipos de tarifa del perfil (HU-04)
+    public static final String TARIFA_POR_HORA = "POR_HORA";
+    public static final String TARIFA_POR_TRABAJO = "POR_TRABAJO";
+
     private final UUID id;
     private final UsuarioDominio usuario;
     private final ServicioDominio servicio;
     private final BarrioDominio barrio;
     private final BigDecimal tarifa;
+    private final String tipoTarifa;
     private final int experiencia;
+    private final String descripcion;
     private final String tipoDocumento;
     private final String documento;
     private final BigDecimal promedio;
@@ -29,7 +35,9 @@ public final class TecnicoDominio {
         this.servicio = builder.servicio;
         this.barrio = builder.barrio;
         this.tarifa = builder.tarifa;
+        this.tipoTarifa = builder.tipoTarifa;
         this.experiencia = builder.experiencia;
+        this.descripcion = builder.descripcion;
         this.tipoDocumento = builder.tipoDocumento;
         this.documento = builder.documento;
         this.promedio = builder.promedio;
@@ -55,8 +63,21 @@ public final class TecnicoDominio {
         return tarifa;
     }
 
+    public String getTipoTarifa() {
+        return tipoTarifa;
+    }
+
     public int getExperiencia() {
         return experiencia;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    // HU-02 CA-05: el técnico recién registrado no tiene especialidad hasta que guarda su perfil (HU-04)
+    public boolean tienePerfil() {
+        return !UtilUUID.esValorDefecto(servicio.getId());
     }
 
     public String getTipoDocumento() {
@@ -77,7 +98,9 @@ public final class TecnicoDominio {
         private ServicioDominio servicio;
         private BarrioDominio barrio;
         private BigDecimal tarifa;
+        private String tipoTarifa;
         private int experiencia;
+        private String descripcion;
         private String tipoDocumento;
         private String documento;
         private BigDecimal promedio;
@@ -88,7 +111,9 @@ public final class TecnicoDominio {
             servicio = new ServicioDominio.Builder().build();
             barrio = new BarrioDominio.Builder().build();
             tarifa = BigDecimal.ZERO;
+            tipoTarifa = UtilTexto.VACIO;
             experiencia = 0;
+            descripcion = UtilTexto.VACIO;
             tipoDocumento = UtilTexto.VACIO;
             documento = UtilTexto.VACIO;
             promedio = BigDecimal.ZERO;
@@ -119,8 +144,18 @@ public final class TecnicoDominio {
             return this;
         }
 
+        public Builder tipoTarifa(String tipoTarifa) {
+            this.tipoTarifa = UtilTexto.getUtilTexto().quitarEspacioEnBlanco(tipoTarifa);
+            return this;
+        }
+
         public Builder experiencia(int experiencia) {
             this.experiencia = experiencia;
+            return this;
+        }
+
+        public Builder descripcion(String descripcion) {
+            this.descripcion = UtilTexto.getUtilTexto().quitarEspacioEnBlanco(descripcion);
             return this;
         }
 

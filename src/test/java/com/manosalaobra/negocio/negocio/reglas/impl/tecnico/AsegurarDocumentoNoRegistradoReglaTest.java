@@ -43,6 +43,15 @@ class AsegurarDocumentoNoRegistradoReglaTest {
             public List<TecnicoEntidad> consultarTodos() {
                 return List.of();
             }
+
+            @Override
+            public TecnicoEntidad consultarPorUsuario(UUID usuarioId) {
+                return new TecnicoEntidad();
+            }
+
+            @Override
+            public void actualizar(UUID id, TecnicoEntidad entidad) {
+            }
         };
         return new FabricaDeDAOParaPruebas().conTecnicoDAO(tecnicoDAO);
     }
