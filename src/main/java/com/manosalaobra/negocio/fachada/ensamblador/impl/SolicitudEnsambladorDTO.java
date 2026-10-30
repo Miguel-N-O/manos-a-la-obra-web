@@ -19,7 +19,7 @@ public final class SolicitudEnsambladorDTO implements EnsambladorDTO<SolicitudDo
         return INSTANCIA;
     }
 
-    // Del ciudadano solo sale el nombre; los datos de contacto se entregan aparte al aceptar (HU-13)
+    // Del ciudadano sale el nombre, y el teléfono solo si el negocio lo dejó (solicitud aceptada, CU18)
     @Override
     public SolicitudDTO convertirADTO(SolicitudDominio dominio) {
         SolicitudDominio dominioSeguro = UtilObjeto.obtenerValorDefectoSiValorOriginalEsNulo(
@@ -27,6 +27,9 @@ public final class SolicitudEnsambladorDTO implements EnsambladorDTO<SolicitudDo
         UsuarioDTO ciudadano = new UsuarioDTO();
         ciudadano.setId(dominioSeguro.getCiudadano().getId());
         ciudadano.setNombre(dominioSeguro.getCiudadano().getNombre());
+        ciudadano.setIndicativoPais(IndicativoPaisEnsambladorDTO.getInstancia()
+                .convertirADTO(dominioSeguro.getCiudadano().getIndicativoPais()));
+        ciudadano.setNumeroTelefono(dominioSeguro.getCiudadano().getNumeroTelefono());
 
         SolicitudDTO dto = new SolicitudDTO();
         dto.setId(dominioSeguro.getId());

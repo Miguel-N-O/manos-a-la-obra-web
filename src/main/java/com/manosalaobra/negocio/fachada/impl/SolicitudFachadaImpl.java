@@ -147,6 +147,32 @@ public final class SolicitudFachadaImpl implements SolicitudFachada {
         }
     }
 
+    @Override
+    public SolicitudDTO aceptar(UUID usuarioTecnicoId, UUID solicitudId) {
+        boolean transaccionIniciada = false;
+        try {
+            daoFactory.iniciarTransaccion();
+            transaccionIniciada = true;
+
+            SolicitudDominio aceptada = solicitudNegocio.aceptar(usuarioTecnicoId, solicitudId);
+
+            daoFactory.confirmarTransaccion();
+            transaccionIniciada = false;
+            return SolicitudEnsambladorDTO.getInstancia().convertirADTO(aceptada);
+        } catch (ManosALaObraExcepcion excepcion) {
+            cancelarSiHaceFalta(transaccionIniciada);
+            throw excepcion;
+        } catch (Exception excepcion) {
+            cancelarSiHaceFalta(transaccionIniciada);
+            REGISTRO.error("Problema inesperado aceptando una solicitud", excepcion);
+            throw ManosALaObraFachadaExcepcion.crear(
+                    CatalogoMensajes.SolicitudFachadaImpl.USUARIO_ERROR_PROBLEMA_INESPERADO_ACEPTANDO_SOLICITUD,
+                    excepcion.getMessage(), excepcion);
+        } finally {
+            daoFactory.cerrarConexion();
+        }
+    }
+
     private void cancelarSiHaceFalta(boolean transaccionIniciada) {
         if (transaccionIniciada) {
             daoFactory.cancelarTransaccion();

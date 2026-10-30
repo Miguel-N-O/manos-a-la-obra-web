@@ -17,4 +17,6 @@ public interface SolicitudNegocio {
     SolicitudDominio consultarUnaRecibida(UUID usuarioTecnicoId, UUID solicitudId);
 
     void marcarRecibidasComoNotificadas(UUID usuarioTecnicoId);
+
+    SolicitudDominio aceptar(UUID usuarioTecnicoId, UUID solicitudId);
 }

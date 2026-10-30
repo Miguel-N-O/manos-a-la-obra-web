@@ -84,6 +84,18 @@ public class SolicitudController extends AbstractRestController {
         return ResponseEntity.ok(RespuestaOk.crear());
     }
 
+    // HU-11 / CU11: el técnico acepta una solicitud pendiente
+    @PutMapping("/recibidas/{id}/aceptar")
+    public ResponseEntity<Respuesta<SolicitudDTO>> aceptar(@PathVariable("id") UUID id, HttpServletRequest peticion) {
+        ResponseEntity<Respuesta<SolicitudDTO>> sinPermiso = validarSesionDeTecnico(peticion);
+        if (sinPermiso != null) {
+            return sinPermiso;
+        }
+        SolicitudFachada solicitudFachada = new SolicitudFachadaImpl();
+        SolicitudDTO aceptada = solicitudFachada.aceptar(SesionUsuario.idActual(peticion), id);
+        return ResponseEntity.ok(RespuestaOk.crear(aceptada, CatalogoMensajes.SolicitudController.USUARIO_SOLICITUD_ACEPTADA));
+    }
+
     @GetMapping("/recibidas/{id}")
     public ResponseEntity<Respuesta<SolicitudDTO>> consultarUnaRecibida(@PathVariable("id") UUID id,
             HttpServletRequest peticion) {
