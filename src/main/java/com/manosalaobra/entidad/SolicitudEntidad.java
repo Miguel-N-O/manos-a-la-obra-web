@@ -13,19 +13,27 @@ public final class SolicitudEntidad {
     private UUID id;
     private UsuarioEntidad ciudadano;
     private TecnicoEntidad tecnico;
+    private BarrioEntidad barrio;
     private String descripcion;
     private LocalDateTime fechaHora;
     private EstadoSolicitudEntidad estadoSolicitud;
     private boolean notificada;
+    private String motivoRechazo;
+    private LocalDateTime respondidaEn;
+    private LocalDateTime creadaEn;
 
     public SolicitudEntidad() {
         setId(UtilUUID.obtenerUUIDDefecto());
         setCiudadano(new UsuarioEntidad());
         setTecnico(new TecnicoEntidad());
+        setBarrio(new BarrioEntidad());
         setDescripcion(UtilTexto.VACIO);
         setFechaHora(UtilFecha.obtenerFechaHoraDefecto());
         setEstadoSolicitud(new EstadoSolicitudEntidad());
         setNotificada(false);
+        setMotivoRechazo(UtilTexto.VACIO);
+        setRespondidaEn(UtilFecha.obtenerFechaHoraDefecto());
+        setCreadaEn(UtilFecha.obtenerFechaHoraDefecto());
     }
 
     public SolicitudEntidad(UUID id, UsuarioEntidad ciudadano, TecnicoEntidad tecnico, String descripcion, LocalDateTime fechaHora, EstadoSolicitudEntidad estadoSolicitud, boolean notificada) {
@@ -36,6 +44,10 @@ public final class SolicitudEntidad {
         setFechaHora(fechaHora);
         setEstadoSolicitud(estadoSolicitud);
         setNotificada(notificada);
+        setBarrio(new BarrioEntidad());
+        setMotivoRechazo(UtilTexto.VACIO);
+        setRespondidaEn(UtilFecha.obtenerFechaHoraDefecto());
+        setCreadaEn(UtilFecha.obtenerFechaHoraDefecto());
     }
 
     public UUID getId() {
@@ -60,6 +72,38 @@ public final class SolicitudEntidad {
 
     public void setTecnico(TecnicoEntidad tecnico) {
         this.tecnico = UtilObjeto.obtenerValorDefectoSiValorOriginalEsNulo(tecnico, new TecnicoEntidad());
+    }
+
+    public BarrioEntidad getBarrio() {
+        return barrio;
+    }
+
+    public void setBarrio(BarrioEntidad barrio) {
+        this.barrio = UtilObjeto.obtenerValorDefectoSiValorOriginalEsNulo(barrio, new BarrioEntidad());
+    }
+
+    public String getMotivoRechazo() {
+        return motivoRechazo;
+    }
+
+    public void setMotivoRechazo(String motivoRechazo) {
+        this.motivoRechazo = UtilTexto.getUtilTexto().quitarEspacioEnBlanco(motivoRechazo);
+    }
+
+    public LocalDateTime getRespondidaEn() {
+        return respondidaEn;
+    }
+
+    public void setRespondidaEn(LocalDateTime respondidaEn) {
+        this.respondidaEn = UtilFecha.obtenerValorDefecto(respondidaEn);
+    }
+
+    public LocalDateTime getCreadaEn() {
+        return creadaEn;
+    }
+
+    public void setCreadaEn(LocalDateTime creadaEn) {
+        this.creadaEn = UtilFecha.obtenerValorDefecto(creadaEn);
     }
 
     public String getDescripcion() {

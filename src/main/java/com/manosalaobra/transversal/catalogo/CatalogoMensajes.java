@@ -308,6 +308,73 @@ public final class CatalogoMensajes {
         }
     }
 
+    public static final class EstadoSolicitudMySqlDAO {
+        public static final String USUARIO_ERROR_PROBLEMA_CONSULTANDO_ESTADO_SOLICITUD =
+                "No pudimos consultar los estados de las solicitudes. Intenta de nuevo en unos minutos.";
+        public static final String USUARIO_ERROR_PROBLEMA_NO_CONTROLADO_CONSULTANDO_ESTADO_SOLICITUD =
+                "Ocurrió un problema inesperado al consultar los estados de las solicitudes. Avisa al administrador.";
+
+        private EstadoSolicitudMySqlDAO() {
+        }
+    }
+
+    public static final class SolicitudMySqlDAO {
+        public static final String USUARIO_ERROR_PROBLEMA_CREANDO_SOLICITUD =
+                "No fue posible enviar tu solicitud. Por favor intenta nuevamente.";
+        public static final String USUARIO_ERROR_PROBLEMA_NO_CONTROLADO_CREANDO_SOLICITUD =
+                "Ocurrió un problema inesperado al enviar tu solicitud. Intenta de nuevo o avisa al administrador.";
+        public static final String USUARIO_ERROR_PROBLEMA_CONSULTANDO_SOLICITUD =
+                "No pudimos consultar las solicitudes. Intenta de nuevo en unos minutos.";
+        public static final String USUARIO_ERROR_PROBLEMA_NO_CONTROLADO_CONSULTANDO_SOLICITUD =
+                "Ocurrió un problema inesperado al consultar las solicitudes. Avisa al administrador.";
+
+        private SolicitudMySqlDAO() {
+        }
+    }
+
+    public static final class SolicitudNegocioImpl {
+        public static final String USUARIO_ERROR_CAMPOS_FALTANTES = "Para enviar la solicitud debes completar: %s.";
+        public static final String USUARIO_ERROR_CAMPO_TECNICO = "el técnico";
+        public static final String USUARIO_ERROR_CAMPO_DESCRIPCION = "la descripción del trabajo";
+        public static final String USUARIO_ERROR_CAMPO_BARRIO = "el barrio donde se realizará el trabajo";
+        public static final String USUARIO_ERROR_CAMPO_FECHA_HORA = "la fecha y hora propuestas";
+        public static final String USUARIO_ERROR_DESCRIPCION_LONGITUD_NO_VALIDA =
+                "La descripción del trabajo debe tener entre 10 y 500 caracteres.";
+        public static final String USUARIO_ERROR_FECHA_HORA_NO_FUTURA =
+                "La fecha y hora propuestas deben ser posteriores al momento actual.";
+        public static final String USUARIO_ERROR_TECNICO_NO_DISPONIBLE =
+                "El técnico que elegiste no está disponible. Busca otro técnico.";
+        public static final String USUARIO_ERROR_SOLICITUD_NO_ENCONTRADA = "No encontramos esa solicitud.";
+        public static final String USUARIO_ERROR_ESTADO_NO_CONFIGURADO =
+                "No pudimos enviar tu solicitud porque falta configurar los estados de solicitud. Avisa al administrador.";
+
+        private SolicitudNegocioImpl() {
+        }
+    }
+
+    public static final class SolicitudFachadaImpl {
+        public static final String USUARIO_ERROR_PROBLEMA_INESPERADO_CREANDO_SOLICITUD =
+                "No fue posible enviar tu solicitud. Por favor intenta nuevamente.";
+        public static final String USUARIO_ERROR_PROBLEMA_INESPERADO_CONSULTANDO_SOLICITUDES =
+                "No pudimos cargar tus solicitudes. Intenta de nuevo en unos minutos.";
+
+        private SolicitudFachadaImpl() {
+        }
+    }
+
+    public static final class SolicitudController {
+        public static final String USUARIO_SOLICITUD_ENVIADA =
+                "Tu solicitud fue enviada. Quedará pendiente hasta que el técnico responda.";
+        public static final String USUARIO_SIN_SOLICITUDES =
+                "Aún no has enviado solicitudes. Busca un técnico para empezar.";
+        public static final String USUARIO_ERROR_NO_HAY_SESION = "Inicia sesión para solicitar servicios.";
+        public static final String USUARIO_ERROR_SOLO_CIUDADANOS =
+                "Solo los ciudadanos pueden solicitar servicios y ver sus solicitudes.";
+
+        private SolicitudController() {
+        }
+    }
+
     public static final class SesionController {
         public static final String USUARIO_SESION_INICIADA = "¡Bienvenido de nuevo!";
         public static final String USUARIO_SESION_CERRADA = "Cerraste sesión.";
