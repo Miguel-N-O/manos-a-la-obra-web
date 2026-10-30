@@ -21,6 +21,7 @@ import com.manosalaobra.entidad.SolicitudEntidad;
 import com.manosalaobra.entidad.TecnicoEntidad;
 import com.manosalaobra.pruebas.FabricaDeDAOParaPruebas;
 import com.manosalaobra.transversal.excepciones.ManosALaObraExcepcion;
+import com.manosalaobra.transversal.utilitarios.UtilFecha;
 import com.manosalaobra.transversal.utilitarios.UtilUUID;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -34,6 +35,7 @@ class SolicitudNegocioImplTest {
     private static final UUID ID_USUARIO_TECNICO = UtilUUID.generar();
     private static final UUID ID_BARRIO = UtilUUID.generar();
     private static final UUID ID_PENDIENTE = UtilUUID.generar();
+    private static final UUID ID_ACEPTADA = UtilUUID.generar();
 
     // Guarda en memoria lo que se crea y responde las consultas filtrando por id y ciudadano
     private static final class SolicitudDAOEnMemoria implements SolicitudDAO {
@@ -68,6 +70,18 @@ class SolicitudNegocioImplTest {
         @Override
         public List<SolicitudEntidad> consultarTodos() {
             return solicitudes;
+        }
+
+        // Igual que el UPDATE real: solo cambia el estado, el motivo y la fecha de respuesta
+        @Override
+        public void actualizar(UUID id, SolicitudEntidad entidad) {
+            for (SolicitudEntidad solicitud : solicitudes) {
+                if (id.equals(solicitud.getId())) {
+                    solicitud.setEstadoSolicitud(entidad.getEstadoSolicitud());
+                    solicitud.setMotivoRechazo(entidad.getMotivoRechazo());
+                    solicitud.setRespondidaEn(entidad.getRespondidaEn());
+                }
+            }
         }
 
         @Override
@@ -148,9 +162,13 @@ class SolicitudNegocioImplTest {
         return new EstadoSolicitudDAO() {
             @Override
             public List<EstadoSolicitudEntidad> consultarPorFiltro(EstadoSolicitudEntidad filtro) {
-                return EstadoSolicitudDominio.PENDIENTE.equals(filtro.getNombre())
-                        ? List.of(new EstadoSolicitudEntidad(ID_PENDIENTE, EstadoSolicitudDominio.PENDIENTE, true))
-                        : List.of();
+                if (EstadoSolicitudDominio.PENDIENTE.equals(filtro.getNombre())) {
+                    return List.of(new EstadoSolicitudEntidad(ID_PENDIENTE, EstadoSolicitudDominio.PENDIENTE, true));
+                }
+                if (EstadoSolicitudDominio.ACEPTADA.equals(filtro.getNombre())) {
+                    return List.of(new EstadoSolicitudEntidad(ID_ACEPTADA, EstadoSolicitudDominio.ACEPTADA, true));
+                }
+                return List.of();
             }
 
             @Override
@@ -273,6 +291,54 @@ class SolicitudNegocioImplTest {
 
         assertTrue(solicitudDAO.solicitudes.get(0).isNotificada());
         assertFalse(deOtroTecnico.isNotificada());
+    }
+
+    @Test
+    void aceptaUnaSolicitudPendienteYRegistraLaFechaDeRespuesta() {
+        SolicitudDominio solicitud = negocio.crear(UtilUUID.generar(), solicitudPara(ID_TECNICO).build());
+
+        SolicitudDominio aceptada = negocio.aceptar(ID_USUARIO_TECNICO, solicitud.getId());
+
+        assertEquals(EstadoSolicitudDominio.ACEPTADA, aceptada.getEstadoSolicitud().getNombre());
+        assertEquals(ID_ACEPTADA, solicitudDAO.solicitudes.get(0).getEstadoSolicitud().getId());
+        assertFalse(UtilFecha.esValorDefecto(solicitudDAO.solicitudes.get(0).getRespondidaEn()));
+    }
+
+    @Test
+    void noAceptaUnaSolicitudQueYaFueRespondida() {
+        SolicitudDominio solicitud = negocio.crear(UtilUUID.generar(), solicitudPara(ID_TECNICO).build());
+        negocio.aceptar(ID_USUARIO_TECNICO, solicitud.getId());
+
+        ManosALaObraExcepcion excepcion = assertThrows(ManosALaObraExcepcion.class,
+                () -> negocio.aceptar(ID_USUARIO_TECNICO, solicitud.getId()));
+        assertEquals("Esta solicitud ya fue respondida y no puede modificarse.", excepcion.getMensajeUsuario());
+    }
+
+    @Test
+    void noAceptaUnaSolicitudDeOtroTecnico() {
+        SolicitudEntidad deOtroTecnico = new SolicitudEntidad();
+        deOtroTecnico.setId(UtilUUID.generar());
+        deOtroTecnico.getTecnico().setId(UtilUUID.generar());
+        deOtroTecnico.getEstadoSolicitud().setNombre(EstadoSolicitudDominio.PENDIENTE);
+        solicitudDAO.solicitudes.add(deOtroTecnico);
+
+        assertThrows(ManosALaObraExcepcion.class, () -> negocio.aceptar(ID_USUARIO_TECNICO, deOtroTecnico.getId()));
+        assertEquals(EstadoSolicitudDominio.PENDIENTE, deOtroTecnico.getEstadoSolicitud().getNombre());
+    }
+
+    @Test
+    void elTecnicoSoloVeElTelefonoDelCiudadanoCuandoAceptaLaSolicitud() {
+        UUID ciudadano = UtilUUID.generar();
+        SolicitudDominio solicitud = negocio.crear(ciudadano, solicitudPara(ID_TECNICO).build());
+        solicitudDAO.solicitudes.get(0).getCiudadano().setNumeroTelefono("3001234567");
+
+        assertEquals("", negocio.consultarUnaRecibida(ID_USUARIO_TECNICO, solicitud.getId())
+                .getCiudadano().getNumeroTelefono());
+        assertEquals("3001234567", negocio.aceptar(ID_USUARIO_TECNICO, solicitud.getId())
+                .getCiudadano().getNumeroTelefono());
+        // El ciudadano no recibe su propio teléfono en "Mis solicitudes"
+        assertEquals("", negocio.consultarUnaDelCiudadano(ciudadano, solicitud.getId())
+                .getCiudadano().getNumeroTelefono());
     }
 
     @Test

@@ -11,15 +11,18 @@ import com.manosalaobra.negocio.negocio.SolicitudNegocio;
 import com.manosalaobra.negocio.negocio.ensamblador.impl.EstadoSolicitudEnsambladorEntidad;
 import com.manosalaobra.negocio.negocio.ensamblador.impl.SolicitudEnsambladorEntidad;
 import com.manosalaobra.negocio.negocio.reglas.impl.barrio.AsegurarBarrioExisteRegla;
+import com.manosalaobra.negocio.negocio.reglas.impl.solicitud.AsegurarSolicitudPendienteRegla;
 import com.manosalaobra.negocio.negocio.reglas.impl.solicitud.ValidarDatosCrearSolicitudRegla;
 import com.manosalaobra.negocio.negocio.reglas.impl.tecnico.AsegurarTecnicoDisponibleRegla;
 import com.manosalaobra.transversal.catalogo.CatalogoMensajes;
 import com.manosalaobra.transversal.excepciones.ManosALaObraNegocioExcepcion;
+import com.manosalaobra.transversal.utilitarios.UtilFecha;
 import com.manosalaobra.transversal.utilitarios.UtilUUID;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.UnaryOperator;
 
 public final class SolicitudNegocioImpl implements SolicitudNegocio {
 
@@ -54,7 +57,7 @@ public final class SolicitudNegocioImpl implements SolicitudNegocio {
     public List<SolicitudDominio> consultarDelCiudadano(UUID ciudadanoId) {
         SolicitudEntidad filtro = new SolicitudEntidad();
         filtro.getCiudadano().setId(ciudadanoId);
-        return convertirADominio(consultarConFiltroSeguro(ciudadanoId, filtro));
+        return convertirADominio(consultarConFiltroSeguro(ciudadanoId, filtro), this::sinContactoDelCiudadano);
     }
 
     // CU19: el ciudadano solo puede ver sus propias solicitudes
@@ -67,7 +70,7 @@ public final class SolicitudNegocioImpl implements SolicitudNegocio {
         SolicitudEntidad filtro = new SolicitudEntidad();
         filtro.setId(solicitudId);
         filtro.getCiudadano().setId(ciudadanoId);
-        return obtenerUnica(consultarConFiltroSeguro(ciudadanoId, filtro));
+        return sinContactoDelCiudadano(obtenerUnica(consultarConFiltroSeguro(ciudadanoId, filtro)));
     }
 
     // HU-10 CA-02 y CA-03: solo las dirigidas al técnico, con las pendientes primero (CU18)
@@ -76,7 +79,7 @@ public final class SolicitudNegocioImpl implements SolicitudNegocio {
         SolicitudEntidad filtro = new SolicitudEntidad();
         filtro.getTecnico().setId(consultarIdTecnico(usuarioTecnicoId));
         List<SolicitudDominio> solicitudes = convertirADominio(
-                daoFactory.obtenerSolicitudDAO().consultarPorFiltro(filtro));
+                daoFactory.obtenerSolicitudDAO().consultarPorFiltro(filtro), this::conContactoSegunEstado);
         // El DAO las trae de la más reciente a la más antigua y el ordenamiento estable conserva ese orden
         solicitudes.sort(Comparator.comparing(solicitud -> !esPendiente(solicitud)));
         return solicitudes;
@@ -91,13 +94,60 @@ public final class SolicitudNegocioImpl implements SolicitudNegocio {
         SolicitudEntidad filtro = new SolicitudEntidad();
         filtro.setId(solicitudId);
         filtro.getTecnico().setId(consultarIdTecnico(usuarioTecnicoId));
-        return obtenerUnica(daoFactory.obtenerSolicitudDAO().consultarPorFiltro(filtro));
+        return conContactoSegunEstado(obtenerUnica(daoFactory.obtenerSolicitudDAO().consultarPorFiltro(filtro)));
     }
 
     // CU10: al abrir "Solicitudes recibidas" el aviso de solicitudes nuevas deja de mostrarse
     @Override
     public void marcarRecibidasComoNotificadas(UUID usuarioTecnicoId) {
         daoFactory.obtenerSolicitudDAO().marcarComoNotificadas(consultarIdTecnico(usuarioTecnicoId));
+    }
+
+    // HU-11 / CU11: el técnico acepta una solicitud suya que sigue PENDIENTE
+    @Override
+    public SolicitudDominio aceptar(UUID usuarioTecnicoId, UUID solicitudId) {
+        SolicitudDominio solicitud = consultarUnaRecibida(usuarioTecnicoId, solicitudId);
+        AsegurarSolicitudPendienteRegla.obtenerInstancia().ejecutar(solicitud);
+
+        SolicitudDominio aceptada = copiar(solicitud)
+                .estadoSolicitud(consultarEstadoPorNombre(EstadoSolicitudDominio.ACEPTADA))
+                .respondidaEn(UtilFecha.obtenerFechaHoraActual())
+                .build();
+        daoFactory.obtenerSolicitudDAO().actualizar(aceptada.getId(),
+                SolicitudEnsambladorEntidad.getInstancia().convertirAEntidad(aceptada));
+        return consultarUnaRecibida(usuarioTecnicoId, solicitudId);
+    }
+
+    // CU18: el técnico ve el teléfono del ciudadano solo cuando aceptó la solicitud
+    private SolicitudDominio conContactoSegunEstado(SolicitudDominio solicitud) {
+        String estado = solicitud.getEstadoSolicitud().getNombre();
+        if (EstadoSolicitudDominio.ACEPTADA.equals(estado) || EstadoSolicitudDominio.FINALIZADA.equals(estado)) {
+            return solicitud;
+        }
+        return sinContactoDelCiudadano(solicitud);
+    }
+
+    private SolicitudDominio sinContactoDelCiudadano(SolicitudDominio solicitud) {
+        UsuarioDominio soloNombre = new UsuarioDominio.Builder()
+                .id(solicitud.getCiudadano().getId())
+                .nombre(solicitud.getCiudadano().getNombre())
+                .build();
+        return copiar(solicitud).ciudadano(soloNombre).build();
+    }
+
+    private SolicitudDominio.Builder copiar(SolicitudDominio solicitud) {
+        return new SolicitudDominio.Builder()
+                .id(solicitud.getId())
+                .ciudadano(solicitud.getCiudadano())
+                .tecnico(solicitud.getTecnico())
+                .barrio(solicitud.getBarrio())
+                .descripcion(solicitud.getDescripcion())
+                .fechaHora(solicitud.getFechaHora())
+                .estadoSolicitud(solicitud.getEstadoSolicitud())
+                .notificada(solicitud.isNotificada())
+                .motivoRechazo(solicitud.getMotivoRechazo())
+                .respondidaEn(solicitud.getRespondidaEn())
+                .creadaEn(solicitud.getCreadaEn());
     }
 
     // La sesión guarda el usuario; las solicitudes apuntan al registro del técnico
@@ -135,10 +185,11 @@ public final class SolicitudNegocioImpl implements SolicitudNegocio {
         return daoFactory.obtenerSolicitudDAO().consultarPorFiltro(filtro);
     }
 
-    private List<SolicitudDominio> convertirADominio(List<SolicitudEntidad> entidades) {
+    private List<SolicitudDominio> convertirADominio(List<SolicitudEntidad> entidades,
+            UnaryOperator<SolicitudDominio> filtroDeContacto) {
         List<SolicitudDominio> solicitudes = new ArrayList<>();
         for (SolicitudEntidad entidad : entidades) {
-            solicitudes.add(SolicitudEnsambladorEntidad.getInstancia().convertirADominio(entidad));
+            solicitudes.add(filtroDeContacto.apply(SolicitudEnsambladorEntidad.getInstancia().convertirADominio(entidad)));
         }
         return solicitudes;
     }

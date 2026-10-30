@@ -5,12 +5,14 @@ import com.manosalaobra.dao.datos.entidad.SqlDAO;
 import com.manosalaobra.entidad.BarrioEntidad;
 import com.manosalaobra.entidad.CiudadEntidad;
 import com.manosalaobra.entidad.EstadoSolicitudEntidad;
+import com.manosalaobra.entidad.IndicativoPaisEntidad;
 import com.manosalaobra.entidad.ServicioEntidad;
 import com.manosalaobra.entidad.SolicitudEntidad;
 import com.manosalaobra.entidad.TecnicoEntidad;
 import com.manosalaobra.entidad.UsuarioEntidad;
 import com.manosalaobra.transversal.catalogo.CatalogoMensajes;
 import com.manosalaobra.transversal.excepciones.ManosALaObraDatosExcepcion;
+import com.manosalaobra.transversal.utilitarios.UtilFecha;
 import com.manosalaobra.transversal.utilitarios.UtilObjeto;
 import com.manosalaobra.transversal.utilitarios.UtilTexto;
 import com.manosalaobra.transversal.utilitarios.UtilUUID;
@@ -38,11 +40,19 @@ public final class SolicitudMySqlDAO extends SqlDAO implements SolicitudDAO {
             UPDATE Solicitud SET notificada = TRUE WHERE tecnico_id = ? AND notificada = FALSE
             """;
 
-    // No trae teléfonos: los datos de contacto se entregan aparte cuando la solicitud se acepta (HU-13)
+    // HU-11 y HU-12: respuesta del técnico (estado, motivo de rechazo y fecha de respuesta)
+    private static final String ACTUALIZAR_RESPUESTA = """
+            UPDATE Solicitud SET estado_solicitud_id = ?, motivo_rechazo = ?, respondida_en = ? WHERE id = ?
+            """;
+
+    // Trae el teléfono del ciudadano, pero el negocio solo lo entrega al técnico si aceptó la solicitud (CU18).
+    // El teléfono del técnico no se trae: se entrega al ciudadano en HU-13.
     private static final String SELECCIONAR = """
             SELECT s.id, s.descripcion, s.fecha_hora, s.motivo_rechazo, s.notificada, s.respondida_en, s.creada_en,
                    es.id AS estado_id, es.nombre AS estado_nombre, es.activo AS estado_activo,
-                   ci.id AS ciudadano_id, ci.nombre AS ciudadano_nombre,
+                   ci.id AS ciudadano_id, ci.nombre AS ciudadano_nombre, ci.numero_telefono AS ciudadano_telefono,
+                   ip.id AS indicativo_id, ip.pais AS indicativo_pais, ip.indicativo AS indicativo_valor,
+                   ip.activo AS indicativo_activo,
                    t.id AS tecnico_id, t.tarifa AS tecnico_tarifa, t.tipo_tarifa AS tecnico_tipo_tarifa,
                    ut.id AS tecnico_usuario_id, ut.nombre AS tecnico_nombre,
                    sv.id AS servicio_id, sv.nombre AS servicio_nombre, sv.activo AS servicio_activo,
@@ -51,6 +61,7 @@ public final class SolicitudMySqlDAO extends SqlDAO implements SolicitudDAO {
             FROM Solicitud s
             JOIN EstadoSolicitud es ON es.id = s.estado_solicitud_id
             JOIN Usuario ci ON ci.id = s.ciudadano_id
+            JOIN IndicativoPais ip ON ip.id = ci.indicativo_pais_id
             JOIN Tecnico t ON t.id = s.tecnico_id
             JOIN Usuario ut ON ut.id = t.usuario_id
             LEFT JOIN Servicio sv ON sv.id = t.servicio_id
@@ -81,6 +92,27 @@ public final class SolicitudMySqlDAO extends SqlDAO implements SolicitudDAO {
         } catch (Exception excepcion) {
             throw ManosALaObraDatosExcepcion.crear(
                     CatalogoMensajes.SolicitudMySqlDAO.USUARIO_ERROR_PROBLEMA_NO_CONTROLADO_CREANDO_SOLICITUD,
+                    excepcion.getMessage(), excepcion);
+        }
+    }
+
+    @Override
+    public void actualizar(UUID id, SolicitudEntidad entidad) {
+        try (PreparedStatement sentencia = getConexion().prepareStatement(ACTUALIZAR_RESPUESTA)) {
+            sentencia.setString(1, entidad.getEstadoSolicitud().getId().toString());
+            sentencia.setString(2, UtilTexto.getUtilTexto().esVacia(entidad.getMotivoRechazo())
+                    ? null : entidad.getMotivoRechazo());
+            sentencia.setTimestamp(3, UtilFecha.esValorDefecto(entidad.getRespondidaEn())
+                    ? null : Timestamp.valueOf(entidad.getRespondidaEn()));
+            sentencia.setString(4, id.toString());
+            sentencia.executeUpdate();
+        } catch (SQLException excepcion) {
+            throw ManosALaObraDatosExcepcion.crear(
+                    CatalogoMensajes.SolicitudMySqlDAO.USUARIO_ERROR_PROBLEMA_ACTUALIZANDO_SOLICITUD,
+                    excepcion.getMessage(), excepcion);
+        } catch (Exception excepcion) {
+            throw ManosALaObraDatosExcepcion.crear(
+                    CatalogoMensajes.SolicitudMySqlDAO.USUARIO_ERROR_PROBLEMA_NO_CONTROLADO_ACTUALIZANDO_SOLICITUD,
                     excepcion.getMessage(), excepcion);
         }
     }
@@ -167,6 +199,12 @@ public final class SolicitudMySqlDAO extends SqlDAO implements SolicitudDAO {
         UsuarioEntidad ciudadano = new UsuarioEntidad();
         ciudadano.setId(UtilUUID.convertirAUUID(fila.getString("ciudadano_id")));
         ciudadano.setNombre(fila.getString("ciudadano_nombre"));
+        ciudadano.setNumeroTelefono(fila.getString("ciudadano_telefono"));
+        ciudadano.setIndicativoPais(new IndicativoPaisEntidad(
+                UtilUUID.convertirAUUID(fila.getString("indicativo_id")),
+                fila.getString("indicativo_pais"),
+                fila.getString("indicativo_valor"),
+                fila.getBoolean("indicativo_activo")));
 
         UsuarioEntidad usuarioTecnico = new UsuarioEntidad();
         usuarioTecnico.setId(UtilUUID.convertirAUUID(fila.getString("tecnico_usuario_id")));

@@ -331,6 +331,10 @@ public final class CatalogoMensajes {
                 "No pudimos actualizar el aviso de solicitudes nuevas. Intenta de nuevo en unos minutos.";
         public static final String USUARIO_ERROR_PROBLEMA_NO_CONTROLADO_MARCANDO_NOTIFICADAS =
                 "Ocurrió un problema inesperado al actualizar el aviso de solicitudes nuevas. Avisa al administrador.";
+        public static final String USUARIO_ERROR_PROBLEMA_ACTUALIZANDO_SOLICITUD =
+                "No fue posible guardar la respuesta a la solicitud. Por favor intenta nuevamente.";
+        public static final String USUARIO_ERROR_PROBLEMA_NO_CONTROLADO_ACTUALIZANDO_SOLICITUD =
+                "Ocurrió un problema inesperado al guardar la respuesta a la solicitud. Avisa al administrador.";
 
         private SolicitudMySqlDAO() {
         }
@@ -350,7 +354,9 @@ public final class CatalogoMensajes {
                 "El técnico que elegiste no está disponible. Busca otro técnico.";
         public static final String USUARIO_ERROR_SOLICITUD_NO_ENCONTRADA = "No encontramos esa solicitud.";
         public static final String USUARIO_ERROR_ESTADO_NO_CONFIGURADO =
-                "No pudimos enviar tu solicitud porque falta configurar los estados de solicitud. Avisa al administrador.";
+                "No pudimos procesar la solicitud porque falta configurar los estados de solicitud. Avisa al administrador.";
+        public static final String USUARIO_ERROR_SOLICITUD_YA_RESPONDIDA =
+                "Esta solicitud ya fue respondida y no puede modificarse.";
         public static final String USUARIO_ERROR_REGISTRO_TECNICO_NO_ENCONTRADO =
                 "No encontramos tu registro de técnico. Cierra sesión, vuelve a entrar o avisa al administrador.";
 
@@ -365,6 +371,8 @@ public final class CatalogoMensajes {
                 "No pudimos cargar tus solicitudes. Intenta de nuevo en unos minutos.";
         public static final String USUARIO_ERROR_PROBLEMA_INESPERADO_MARCANDO_NOTIFICADAS =
                 "No pudimos actualizar el aviso de solicitudes nuevas. Intenta de nuevo en unos minutos.";
+        public static final String USUARIO_ERROR_PROBLEMA_INESPERADO_ACEPTANDO_SOLICITUD =
+                "No fue posible aceptar la solicitud. Por favor intenta nuevamente.";
 
         private SolicitudFachadaImpl() {
         }
@@ -382,7 +390,9 @@ public final class CatalogoMensajes {
         public static final String USUARIO_ERROR_NO_HAY_SESION_TECNICO =
                 "Inicia sesión para ver las solicitudes que has recibido.";
         public static final String USUARIO_ERROR_SOLO_TECNICOS =
-                "Solo los técnicos pueden ver las solicitudes recibidas.";
+                "Solo los técnicos pueden ver y responder las solicitudes recibidas.";
+        public static final String USUARIO_SOLICITUD_ACEPTADA =
+                "Aceptaste la solicitud. El ciudadano ya puede ver tus datos de contacto para coordinar el trabajo.";
 
         private SolicitudController() {
         }
