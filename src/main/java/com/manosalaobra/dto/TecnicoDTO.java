@@ -15,6 +15,7 @@ public final class TecnicoDTO {
     private BarrioDTO barrio;
     private BigDecimal tarifa;
     private int experiencia;
+    private String tipoDocumento;
     private String documento;
     private BigDecimal promedio;
 
@@ -25,6 +26,7 @@ public final class TecnicoDTO {
         setBarrio(new BarrioDTO());
         setTarifa(BigDecimal.ZERO);
         setExperiencia(0);
+        setTipoDocumento(UtilTexto.VACIO);
         setDocumento(UtilTexto.VACIO);
         setPromedio(BigDecimal.ZERO);
     }
@@ -75,6 +77,14 @@ public final class TecnicoDTO {
 
     public void setExperiencia(int experiencia) {
         this.experiencia = experiencia;
+    }
+
+    public String getTipoDocumento() {
+        return tipoDocumento;
+    }
+
+    public void setTipoDocumento(String tipoDocumento) {
+        this.tipoDocumento = UtilTexto.getUtilTexto().quitarEspacioEnBlanco(tipoDocumento);
     }
 
     public String getDocumento() {

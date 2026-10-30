@@ -23,6 +23,17 @@ import java.util.UUID;
 
 public final class TecnicoMySqlDAO extends SqlDAO implements TecnicoDAO {
 
+    private static final int CODIGO_ERROR_DUPLICADO = 1062;
+
+    // HU-02: el técnico se crea sin perfil; especialidad, barrio y tarifa se completan en HU-04.
+    // ruta_documento queda vacía: el archivo del documento se pospuso para un sprint posterior.
+    private static final String INSERTAR = """
+            INSERT INTO Tecnico (id, usuario_id, tipo_documento, documento)
+            VALUES (?, ?, ?, ?)
+            """;
+
+    private static final String CONTAR_POR_DOCUMENTO = "SELECT COUNT(*) FROM Tecnico WHERE documento = ?";
+
     private static final String SELECCIONAR = """
             SELECT t.id, t.tarifa, t.experiencia, t.promedio,
                    u.id AS usuario_id, u.nombre AS usuario_nombre,
@@ -41,6 +52,48 @@ public final class TecnicoMySqlDAO extends SqlDAO implements TecnicoDAO {
 
     public TecnicoMySqlDAO(Connection conexion) {
         super(conexion);
+    }
+
+    @Override
+    public void crear(TecnicoEntidad entidad) {
+        try (PreparedStatement sentencia = getConexion().prepareStatement(INSERTAR)) {
+            sentencia.setString(1, entidad.getId().toString());
+            sentencia.setString(2, entidad.getUsuario().getId().toString());
+            sentencia.setString(3, entidad.getTipoDocumento());
+            sentencia.setString(4, entidad.getDocumento());
+            sentencia.executeUpdate();
+        } catch (SQLException excepcion) {
+            if (excepcion.getErrorCode() == CODIGO_ERROR_DUPLICADO) {
+                throw ManosALaObraDatosExcepcion.crear(
+                        CatalogoMensajes.TecnicoMySqlDAO.USUARIO_ERROR_DOCUMENTO_YA_REGISTRADO,
+                        excepcion.getMessage(), excepcion);
+            }
+            throw ManosALaObraDatosExcepcion.crear(
+                    CatalogoMensajes.TecnicoMySqlDAO.USUARIO_ERROR_PROBLEMA_CREANDO_TECNICO,
+                    excepcion.getMessage(), excepcion);
+        } catch (Exception excepcion) {
+            throw ManosALaObraDatosExcepcion.crear(
+                    CatalogoMensajes.TecnicoMySqlDAO.USUARIO_ERROR_PROBLEMA_NO_CONTROLADO_CREANDO_TECNICO,
+                    excepcion.getMessage(), excepcion);
+        }
+    }
+
+    @Override
+    public boolean existeDocumento(String documento) {
+        try (PreparedStatement sentencia = getConexion().prepareStatement(CONTAR_POR_DOCUMENTO)) {
+            sentencia.setString(1, documento);
+            try (ResultSet resultado = sentencia.executeQuery()) {
+                return resultado.next() && resultado.getInt(1) > 0;
+            }
+        } catch (SQLException excepcion) {
+            throw ManosALaObraDatosExcepcion.crear(
+                    CatalogoMensajes.TecnicoMySqlDAO.USUARIO_ERROR_PROBLEMA_CONSULTANDO_TECNICO,
+                    excepcion.getMessage(), excepcion);
+        } catch (Exception excepcion) {
+            throw ManosALaObraDatosExcepcion.crear(
+                    CatalogoMensajes.TecnicoMySqlDAO.USUARIO_ERROR_PROBLEMA_NO_CONTROLADO_CONSULTANDO_TECNICO,
+                    excepcion.getMessage(), excepcion);
+        }
     }
 
     @Override

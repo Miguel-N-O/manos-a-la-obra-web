@@ -8,12 +8,18 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 public final class TecnicoDominio {
+
+    // Tipos de documento aceptados en el registro (HU-02)
+    public static final String CEDULA_CIUDADANIA = "CC";
+    public static final String CEDULA_EXTRANJERIA = "CE";
+
     private final UUID id;
     private final UsuarioDominio usuario;
     private final ServicioDominio servicio;
     private final BarrioDominio barrio;
     private final BigDecimal tarifa;
     private final int experiencia;
+    private final String tipoDocumento;
     private final String documento;
     private final BigDecimal promedio;
 
@@ -24,6 +30,7 @@ public final class TecnicoDominio {
         this.barrio = builder.barrio;
         this.tarifa = builder.tarifa;
         this.experiencia = builder.experiencia;
+        this.tipoDocumento = builder.tipoDocumento;
         this.documento = builder.documento;
         this.promedio = builder.promedio;
     }
@@ -52,6 +59,10 @@ public final class TecnicoDominio {
         return experiencia;
     }
 
+    public String getTipoDocumento() {
+        return tipoDocumento;
+    }
+
     public String getDocumento() {
         return documento;
     }
@@ -67,6 +78,7 @@ public final class TecnicoDominio {
         private BarrioDominio barrio;
         private BigDecimal tarifa;
         private int experiencia;
+        private String tipoDocumento;
         private String documento;
         private BigDecimal promedio;
 
@@ -77,6 +89,7 @@ public final class TecnicoDominio {
             barrio = new BarrioDominio.Builder().build();
             tarifa = BigDecimal.ZERO;
             experiencia = 0;
+            tipoDocumento = UtilTexto.VACIO;
             documento = UtilTexto.VACIO;
             promedio = BigDecimal.ZERO;
         }
@@ -111,10 +124,16 @@ public final class TecnicoDominio {
             return this;
         }
 
+        public Builder tipoDocumento(String tipoDocumento) {
+            this.tipoDocumento = UtilTexto.getUtilTexto().quitarEspacioEnBlanco(tipoDocumento);
+            return this;
+        }
+
         public Builder documento(String documento) {
             this.documento = UtilTexto.getUtilTexto().quitarEspacioEnBlanco(documento);
             return this;
         }
+
 
         public Builder promedio(BigDecimal promedio) {
             this.promedio = UtilObjeto.obtenerValorDefectoSiValorOriginalEsNulo(promedio, BigDecimal.ZERO);

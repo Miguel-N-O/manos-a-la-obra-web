@@ -42,10 +42,13 @@ public final class TecnicoEnsambladorDTO implements EnsambladorDTO<TecnicoDomini
         TecnicoDTO dtoSeguro = UtilObjeto.obtenerValorDefectoSiValorOriginalEsNulo(dto, new TecnicoDTO());
         return new TecnicoDominio.Builder()
                 .id(dtoSeguro.getId())
+                .usuario(UsuarioEnsambladorDTO.getInstancia().convertirADominio(dtoSeguro.getUsuario()))
                 .servicio(ServicioEnsambladorDTO.getInstancia().convertirADominio(dtoSeguro.getServicio()))
                 .barrio(BarrioEnsambladorDTO.getInstancia().convertirADominio(dtoSeguro.getBarrio()))
                 .tarifa(dtoSeguro.getTarifa())
                 .experiencia(dtoSeguro.getExperiencia())
+                .tipoDocumento(dtoSeguro.getTipoDocumento())
+                .documento(dtoSeguro.getDocumento())
                 .promedio(dtoSeguro.getPromedio())
                 .build();
     }
