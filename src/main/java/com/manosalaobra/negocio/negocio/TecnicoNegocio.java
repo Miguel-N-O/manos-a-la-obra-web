@@ -9,4 +9,8 @@ public interface TecnicoNegocio {
     List<TecnicoDominio> consultarPorFiltro(TecnicoDominio filtro);
 
     TecnicoDominio consultarPorId(UUID id);
+
+    TecnicoDominio consultarPorUsuario(UUID usuarioId);
+
+    TecnicoDominio guardarPerfil(UUID usuarioId, TecnicoDominio perfil);
 }

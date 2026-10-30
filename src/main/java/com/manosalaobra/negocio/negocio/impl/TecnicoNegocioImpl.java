@@ -6,6 +6,9 @@ import com.manosalaobra.dominio.TecnicoDominio;
 import com.manosalaobra.entidad.TecnicoEntidad;
 import com.manosalaobra.negocio.negocio.TecnicoNegocio;
 import com.manosalaobra.negocio.negocio.ensamblador.impl.TecnicoEnsambladorEntidad;
+import com.manosalaobra.negocio.negocio.reglas.impl.barrio.AsegurarBarrioExisteRegla;
+import com.manosalaobra.negocio.negocio.reglas.impl.servicio.AsegurarServicioExisteRegla;
+import com.manosalaobra.negocio.negocio.reglas.impl.tecnico.ValidarDatosPerfilTecnicoRegla;
 import com.manosalaobra.transversal.catalogo.CatalogoMensajes;
 import com.manosalaobra.transversal.excepciones.ManosALaObraNegocioExcepcion;
 import com.manosalaobra.transversal.utilitarios.UtilUUID;
@@ -55,5 +58,42 @@ public final class TecnicoNegocioImpl implements TecnicoNegocio {
                     CatalogoMensajes.TecnicoNegocioImpl.USUARIO_ERROR_TECNICO_NO_ENCONTRADO);
         }
         return TecnicoEnsambladorEntidad.getInstancia().convertirADominio(encontrados.get(0));
+    }
+
+    @Override
+    public TecnicoDominio consultarPorUsuario(UUID usuarioId) {
+        if (UtilUUID.esValorDefecto(usuarioId)) {
+            throw ManosALaObraNegocioExcepcion.crear(
+                    CatalogoMensajes.TecnicoNegocioImpl.USUARIO_ERROR_REGISTRO_TECNICO_NO_ENCONTRADO);
+        }
+        TecnicoEntidad encontrado = daoFactory.obtenerTecnicoDAO().consultarPorUsuario(usuarioId);
+        if (UtilUUID.esValorDefecto(encontrado.getId())) {
+            throw ManosALaObraNegocioExcepcion.crear(
+                    CatalogoMensajes.TecnicoNegocioImpl.USUARIO_ERROR_REGISTRO_TECNICO_NO_ENCONTRADO);
+        }
+        return TecnicoEnsambladorEntidad.getInstancia().convertirADominio(encontrado);
+    }
+
+    @Override
+    public TecnicoDominio guardarPerfil(UUID usuarioId, TecnicoDominio perfil) {
+        ValidarDatosPerfilTecnicoRegla.obtenerInstancia().ejecutar(perfil);
+        AsegurarServicioExisteRegla.obtenerInstancia().ejecutar(perfil.getServicio().getId(), daoFactory);
+        AsegurarBarrioExisteRegla.obtenerInstancia().ejecutar(perfil.getBarrio().getId(), daoFactory);
+
+        // El técnico solo puede cambiar su propio registro: el id sale de la sesión, no de lo que envía
+        TecnicoDominio actual = consultarPorUsuario(usuarioId);
+        TecnicoDominio perfilNuevo = new TecnicoDominio.Builder()
+                .id(actual.getId())
+                .usuario(actual.getUsuario())
+                .servicio(perfil.getServicio())
+                .barrio(perfil.getBarrio())
+                .tarifa(perfil.getTarifa())
+                .tipoTarifa(perfil.getTipoTarifa())
+                .experiencia(perfil.getExperiencia())
+                .descripcion(perfil.getDescripcion())
+                .build();
+        daoFactory.obtenerTecnicoDAO().actualizar(actual.getId(),
+                TecnicoEnsambladorEntidad.getInstancia().convertirAEntidad(perfilNuevo));
+        return consultarPorUsuario(usuarioId);
     }
 }

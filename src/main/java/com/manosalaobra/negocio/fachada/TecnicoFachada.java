@@ -9,4 +9,8 @@ public interface TecnicoFachada {
     List<TecnicoDTO> consultarPorFiltro(TecnicoDTO filtro);
 
     TecnicoDTO consultarPorId(UUID id);
+
+    TecnicoDTO consultarPerfilPropio(UUID usuarioId);
+
+    TecnicoDTO guardarPerfilPropio(UUID usuarioId, TecnicoDTO perfil);
 }

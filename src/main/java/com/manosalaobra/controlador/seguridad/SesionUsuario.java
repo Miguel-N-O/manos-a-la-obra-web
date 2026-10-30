@@ -2,9 +2,12 @@ package com.manosalaobra.controlador.seguridad;
 
 import com.manosalaobra.dominio.RolDominio;
 import com.manosalaobra.dto.UsuarioDTO;
+import com.manosalaobra.transversal.utilitarios.UtilUUID;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+
+import java.util.UUID;
 
 public final class SesionUsuario {
 
@@ -39,6 +42,12 @@ public final class SesionUsuario {
             return null;
         }
         return (String) sesion.getAttribute(ATRIBUTO_ROL);
+    }
+
+    public static UUID idActual(HttpServletRequest peticion) {
+        HttpSession sesion = peticion.getSession(false);
+        String id = sesion == null ? null : (String) sesion.getAttribute(ATRIBUTO_ID);
+        return UtilUUID.convertirAUUID(UtilUUID.obtenerValorDefectoComoTexto(id));
     }
 
     public static String nombreActual(HttpServletRequest peticion) {

@@ -223,6 +223,10 @@ public final class CatalogoMensajes {
                 "Ya existe una cuenta registrada con este correo o documento.";
         public static final String USUARIO_ERROR_PROBLEMA_CREANDO_TECNICO =
                 "No pudimos guardar tu cuenta de técnico. Revisa tus datos e intenta de nuevo.";
+        public static final String USUARIO_ERROR_PROBLEMA_ACTUALIZANDO_PERFIL =
+                "No fue posible guardar tu perfil. Por favor intenta nuevamente.";
+        public static final String USUARIO_ERROR_PROBLEMA_NO_CONTROLADO_ACTUALIZANDO_PERFIL =
+                "Ocurrió un problema inesperado al guardar tu perfil. Intenta de nuevo o avisa al administrador.";
         public static final String USUARIO_ERROR_PROBLEMA_NO_CONTROLADO_CREANDO_TECNICO =
                 "Ocurrió un problema inesperado al guardar tu cuenta de técnico. Intenta de nuevo o avisa al administrador.";
 
@@ -251,6 +255,10 @@ public final class CatalogoMensajes {
                 "No pudimos buscar técnicos. Intenta de nuevo en unos minutos.";
         public static final String USUARIO_ERROR_PROBLEMA_INESPERADO_CONSULTANDO_PERFIL =
                 "No pudimos cargar el perfil del técnico. Intenta de nuevo en unos minutos.";
+        public static final String USUARIO_ERROR_PROBLEMA_INESPERADO_CONSULTANDO_PERFIL_PROPIO =
+                "No pudimos cargar tu perfil. Intenta de nuevo en unos minutos.";
+        public static final String USUARIO_ERROR_PROBLEMA_INESPERADO_GUARDANDO_PERFIL =
+                "No fue posible guardar tu perfil. Por favor intenta nuevamente.";
 
         private TecnicoFachadaImpl() {
         }
@@ -259,6 +267,24 @@ public final class CatalogoMensajes {
     public static final class TecnicoNegocioImpl {
         public static final String USUARIO_ERROR_TECNICO_NO_ENCONTRADO =
                 "El técnico que buscas no existe o no está disponible.";
+        public static final String USUARIO_ERROR_REGISTRO_TECNICO_NO_ENCONTRADO =
+                "No encontramos tu registro de técnico. Cierra sesión, vuelve a entrar o avisa al administrador.";
+        public static final String USUARIO_ERROR_CAMPOS_FALTANTES_PERFIL = "Para guardar tu perfil debes completar: %s.";
+        public static final String USUARIO_ERROR_CAMPO_ESPECIALIDAD = "la especialidad";
+        public static final String USUARIO_ERROR_CAMPO_BARRIO = "el barrio o zona de trabajo";
+        public static final String USUARIO_ERROR_CAMPO_TIPO_TARIFA = "el tipo de tarifa";
+        public static final String USUARIO_ERROR_TARIFA_O_EXPERIENCIA_NO_VALIDAS =
+                "La tarifa debe ser mayor a cero y la experiencia un número entre 0 y 60.";
+        public static final String USUARIO_ERROR_TARIFA_MAXIMA_NO_VALIDA =
+                "La tarifa no puede superar $99.999.999.";
+        public static final String USUARIO_ERROR_TIPO_TARIFA_NO_VALIDO =
+                "El tipo de tarifa debe ser por hora o por trabajo.";
+        public static final String USUARIO_ERROR_DESCRIPCION_LONGITUD_NO_VALIDA =
+                "La descripción no puede superar 500 caracteres.";
+        public static final String USUARIO_ERROR_ESPECIALIDAD_NO_VALIDA =
+                "La especialidad elegida no está disponible. Elige una de la lista.";
+        public static final String USUARIO_ERROR_BARRIO_NO_VALIDO =
+                "El barrio elegido no está disponible. Elige uno de la lista.";
 
         private TecnicoNegocioImpl() {
         }
@@ -271,6 +297,12 @@ public final class CatalogoMensajes {
         public static final String USUARIO_ERROR_SOLO_CIUDADANOS_PERFIL =
                 "Solo los ciudadanos pueden ver el perfil de los técnicos.";
         public static final String USUARIO_TECNICOS_NO_ENCONTRADOS = "No se encontraron técnicos.";
+        public static final String USUARIO_ERROR_NO_HAY_SESION_PERFIL_PROPIO = "Inicia sesión para ver tu perfil técnico.";
+        public static final String USUARIO_ERROR_SOLO_TECNICOS_PERFIL_PROPIO =
+                "Solo los técnicos tienen perfil técnico.";
+        public static final String USUARIO_PERFIL_GUARDADO =
+                "Tu perfil se guardó correctamente. Ya apareces en las búsquedas de los ciudadanos.";
+        public static final String USUARIO_PERFIL_ACTUALIZADO = "Tu perfil se actualizó correctamente.";
 
         private TecnicoController() {
         }
