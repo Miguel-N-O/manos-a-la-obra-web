@@ -71,21 +71,31 @@ CREATE TABLE Usuario (
   CONSTRAINT uk_usuario_correo UNIQUE (correo)
 ) ENGINE=InnoDB;
 
+-- La fila se crea al registrarse el técnico (HU-02); servicio, barrio, tarifa y tipo de tarifa
+-- se llenan al guardar el perfil (HU-04). Sin perfil no aparece en la búsqueda (JOIN con Servicio y Barrio).
 CREATE TABLE Tecnico (
-  id           CHAR(36) NOT NULL DEFAULT (UUID()) PRIMARY KEY,
-  usuario_id   CHAR(36) NOT NULL,
-  servicio_id  CHAR(36) NOT NULL,
-  barrio_id    CHAR(36) NOT NULL,
-  tarifa       DECIMAL(10,2) NOT NULL,
-  experiencia  INT NOT NULL DEFAULT 0,
-  documento    VARCHAR(30) NOT NULL DEFAULT '',
-  promedio     DECIMAL(2,1) NOT NULL DEFAULT 0,
+  id              CHAR(36) NOT NULL DEFAULT (UUID()) PRIMARY KEY,
+  usuario_id      CHAR(36) NOT NULL,
+  tipo_documento  VARCHAR(2) NULL,
+  servicio_id     CHAR(36) NULL,
+  barrio_id       CHAR(36) NULL,
+  tarifa          DECIMAL(10,2) NULL,
+  tipo_tarifa     VARCHAR(12) NULL,
+  experiencia     INT NOT NULL DEFAULT 0,
+  descripcion     VARCHAR(500) NULL,
+  documento       VARCHAR(30) NULL DEFAULT NULL,
+  ruta_documento  VARCHAR(255) NULL,
+  promedio        DECIMAL(2,1) NOT NULL DEFAULT 0,
   CONSTRAINT fk_tecnico_usuario_id FOREIGN KEY (usuario_id) REFERENCES Usuario (id),
   CONSTRAINT fk_tecnico_servicio_id FOREIGN KEY (servicio_id) REFERENCES Servicio (id),
   CONSTRAINT fk_tecnico_barrio_id FOREIGN KEY (barrio_id) REFERENCES Barrio (id),
   CONSTRAINT uk_tecnico_usuario_id UNIQUE (usuario_id),
+  CONSTRAINT uk_tecnico_documento UNIQUE (documento),
+  CONSTRAINT ck_tecnico_tipo_documento CHECK (tipo_documento IN ('CC', 'CE')),
   CONSTRAINT ck_tecnico_tarifa CHECK (tarifa > 0),
+  CONSTRAINT ck_tecnico_tipo_tarifa CHECK (tipo_tarifa IN ('POR_HORA', 'POR_TRABAJO')),
   CONSTRAINT ck_tecnico_experiencia CHECK (experiencia >= 0),
+  CONSTRAINT ck_tecnico_experiencia_maxima CHECK (experiencia <= 60),
   CONSTRAINT ck_tecnico_promedio CHECK (promedio BETWEEN 0 AND 5),
   INDEX idx_tecnico_servicio_barrio (servicio_id, barrio_id)
 ) ENGINE=InnoDB;
@@ -94,14 +104,22 @@ CREATE TABLE Solicitud (
   id                    CHAR(36) NOT NULL DEFAULT (UUID()) PRIMARY KEY,
   ciudadano_id          CHAR(36) NOT NULL,
   tecnico_id            CHAR(36) NOT NULL,
+  barrio_id             CHAR(36) NOT NULL,
   estado_solicitud_id   CHAR(36) NOT NULL,
   descripcion           VARCHAR(500) NOT NULL,
   fecha_hora            DATETIME NOT NULL,
+  motivo_rechazo        VARCHAR(30) NULL,
   notificada            BOOLEAN NOT NULL DEFAULT FALSE,
+  respondida_en         DATETIME NULL,
   creada_en             TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_solicitud_ciudadano_id FOREIGN KEY (ciudadano_id) REFERENCES Usuario (id),
   CONSTRAINT fk_solicitud_tecnico_id FOREIGN KEY (tecnico_id) REFERENCES Tecnico (id),
-  CONSTRAINT fk_solicitud_estado_solicitud_id FOREIGN KEY (estado_solicitud_id) REFERENCES EstadoSolicitud (id)
+  CONSTRAINT fk_solicitud_barrio_id FOREIGN KEY (barrio_id) REFERENCES Barrio (id),
+  CONSTRAINT fk_solicitud_estado_solicitud_id FOREIGN KEY (estado_solicitud_id) REFERENCES EstadoSolicitud (id),
+  CONSTRAINT ck_solicitud_motivo_rechazo CHECK (motivo_rechazo IN
+    ('SIN_DISPONIBILIDAD', 'FUERA_DE_ESPECIALIDAD', 'FUERA_DE_ZONA', 'OTRO')),
+  INDEX idx_solicitud_tecnico_estado (tecnico_id, estado_solicitud_id),
+  INDEX idx_solicitud_ciudadano (ciudadano_id, creada_en)
 ) ENGINE=InnoDB;
 
 CREATE TABLE Calificacion (
