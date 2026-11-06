@@ -16,6 +16,7 @@ public final class UsuarioDominio {
     private final String claveHash;
     private final IndicativoPaisDominio indicativoPais;
     private final String numeroTelefono;
+    private final String motivoEstado;
 
     private UsuarioDominio(Builder builder) {
         this.id = builder.id;
@@ -27,6 +28,7 @@ public final class UsuarioDominio {
         this.claveHash = builder.claveHash;
         this.indicativoPais = builder.indicativoPais;
         this.numeroTelefono = builder.numeroTelefono;
+        this.motivoEstado = builder.motivoEstado;
     }
 
     public UUID getId() {
@@ -65,6 +67,10 @@ public final class UsuarioDominio {
         return numeroTelefono;
     }
 
+    public String getMotivoEstado() {
+        return motivoEstado;
+    }
+
     public static class Builder {
         private UUID id;
         private RolDominio rol;
@@ -75,6 +81,7 @@ public final class UsuarioDominio {
         private String claveHash;
         private IndicativoPaisDominio indicativoPais;
         private String numeroTelefono;
+        private String motivoEstado = UtilTexto.VACIO;
 
         public Builder() {
             id = UtilUUID.obtenerUUIDDefecto();
@@ -126,6 +133,11 @@ public final class UsuarioDominio {
         public Builder indicativoPais(IndicativoPaisDominio indicativoPais) {
             this.indicativoPais = UtilObjeto.obtenerValorDefectoSiValorOriginalEsNulo(
                     indicativoPais, new IndicativoPaisDominio.Builder().build());
+            return this;
+        }
+
+        public Builder motivoEstado(String motivoEstado) {
+            this.motivoEstado = UtilTexto.getUtilTexto().quitarEspacioEnBlanco(motivoEstado);
             return this;
         }
 

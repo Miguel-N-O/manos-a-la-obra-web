@@ -13,6 +13,7 @@ public final class CalificacionEntidad {
     private int estrellas;
     private String comentario;
     private boolean visible;
+    private String motivoModeracion = UtilTexto.VACIO;
 
     public CalificacionEntidad() {
         setId(UtilUUID.obtenerUUIDDefecto());
@@ -68,5 +69,13 @@ public final class CalificacionEntidad {
 
     public void setVisible(boolean visible) {
         this.visible = visible;
+    }
+
+    public String getMotivoModeracion() {
+        return motivoModeracion;
+    }
+
+    public void setMotivoModeracion(String motivoModeracion) {
+        this.motivoModeracion = UtilTexto.getUtilTexto().quitarEspacioEnBlanco(motivoModeracion);
     }
 }

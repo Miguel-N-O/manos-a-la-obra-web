@@ -1,6 +1,7 @@
 package com.manosalaobra.pruebas;
 
 import com.manosalaobra.dao.datos.entidad.BarrioDAO;
+import com.manosalaobra.dao.datos.entidad.CalificacionDAO;
 import com.manosalaobra.dao.datos.entidad.EstadoSolicitudDAO;
 import com.manosalaobra.dao.datos.entidad.EstadoUsuarioDAO;
 import com.manosalaobra.dao.datos.entidad.IndicativoPaisDAO;
@@ -18,6 +19,10 @@ public final class FabricaDeDAOParaPruebas extends DAOFactory {
     private TecnicoDAO tecnicoDAO;
     private EstadoSolicitudDAO estadoSolicitudDAO;
     private SolicitudDAO solicitudDAO;
+    private CalificacionDAO calificacionDAO;
+    private UsuarioDAO usuarioDAO;
+    private EstadoUsuarioDAO estadoUsuarioDAO;
+    private RolDAO rolDAO;
 
     public FabricaDeDAOParaPruebas conServicioDAO(ServicioDAO servicioDAO) {
         this.servicioDAO = servicioDAO;
@@ -44,23 +49,43 @@ public final class FabricaDeDAOParaPruebas extends DAOFactory {
         return this;
     }
 
+    public FabricaDeDAOParaPruebas conCalificacionDAO(CalificacionDAO calificacionDAO) {
+        this.calificacionDAO = calificacionDAO;
+        return this;
+    }
+
+    public FabricaDeDAOParaPruebas conUsuarioDAO(UsuarioDAO usuarioDAO) {
+        this.usuarioDAO = usuarioDAO;
+        return this;
+    }
+
+    public FabricaDeDAOParaPruebas conEstadoUsuarioDAO(EstadoUsuarioDAO estadoUsuarioDAO) {
+        this.estadoUsuarioDAO = estadoUsuarioDAO;
+        return this;
+    }
+
+    public FabricaDeDAOParaPruebas conRolDAO(RolDAO rolDAO) {
+        this.rolDAO = rolDAO;
+        return this;
+    }
+
     @Override
     protected void abrirConexion() {
     }
 
     @Override
     public UsuarioDAO obtenerUsuarioDAO() {
-        return null;
+        return usuarioDAO;
     }
 
     @Override
     public RolDAO obtenerRolDAO() {
-        return null;
+        return rolDAO;
     }
 
     @Override
     public EstadoUsuarioDAO obtenerEstadoUsuarioDAO() {
-        return null;
+        return estadoUsuarioDAO;
     }
 
     @Override
@@ -91,5 +116,10 @@ public final class FabricaDeDAOParaPruebas extends DAOFactory {
     @Override
     public SolicitudDAO obtenerSolicitudDAO() {
         return solicitudDAO;
+    }
+
+    @Override
+    public CalificacionDAO obtenerCalificacionDAO() {
+        return calificacionDAO;
     }
 }

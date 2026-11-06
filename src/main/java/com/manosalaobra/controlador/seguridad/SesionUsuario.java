@@ -7,7 +7,9 @@ import com.manosalaobra.transversal.utilitarios.UtilUUID;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class SesionUsuario {
 
@@ -15,7 +17,32 @@ public final class SesionUsuario {
     public static final String ATRIBUTO_NOMBRE = "usuarioNombre";
     public static final String ATRIBUTO_ROL = "usuarioRol";
 
+    // HU-16: cuentas suspendidas o bloqueadas mientras la aplicación está en marcha; su sesión deja de valer
+    private static final Set<String> CUENTAS_RESTRINGIDAS = ConcurrentHashMap.newKeySet();
+
     private SesionUsuario() {
+    }
+
+    public static void restringir(UUID usuarioId) {
+        CUENTAS_RESTRINGIDAS.add(usuarioId.toString());
+    }
+
+    public static void liberar(UUID usuarioId) {
+        CUENTAS_RESTRINGIDAS.remove(usuarioId.toString());
+    }
+
+    // La sesión de una cuenta restringida se cierra y se trata como si no hubiera sesión
+    private static HttpSession sesionVigente(HttpServletRequest peticion) {
+        HttpSession sesion = peticion.getSession(false);
+        if (sesion == null) {
+            return null;
+        }
+        Object id = sesion.getAttribute(ATRIBUTO_ID);
+        if (id != null && CUENTAS_RESTRINGIDAS.contains(id.toString())) {
+            sesion.invalidate();
+            return null;
+        }
+        return sesion;
     }
 
     public static void iniciar(HttpServletRequest peticion, UsuarioDTO usuario) {
@@ -37,7 +64,7 @@ public final class SesionUsuario {
     }
 
     public static String rolActual(HttpServletRequest peticion) {
-        HttpSession sesion = peticion.getSession(false);
+        HttpSession sesion = sesionVigente(peticion);
         if (sesion == null) {
             return null;
         }
@@ -45,13 +72,13 @@ public final class SesionUsuario {
     }
 
     public static UUID idActual(HttpServletRequest peticion) {
-        HttpSession sesion = peticion.getSession(false);
+        HttpSession sesion = sesionVigente(peticion);
         String id = sesion == null ? null : (String) sesion.getAttribute(ATRIBUTO_ID);
         return UtilUUID.convertirAUUID(UtilUUID.obtenerValorDefectoComoTexto(id));
     }
 
     public static String nombreActual(HttpServletRequest peticion) {
-        HttpSession sesion = peticion.getSession(false);
+        HttpSession sesion = sesionVigente(peticion);
         return sesion == null ? null : (String) sesion.getAttribute(ATRIBUTO_NOMBRE);
     }
 

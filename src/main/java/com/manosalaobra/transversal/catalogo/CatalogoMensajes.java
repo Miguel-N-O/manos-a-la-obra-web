@@ -68,6 +68,11 @@ public final class CatalogoMensajes {
         public static final String USUARIO_ERROR_PROBLEMA_NO_CONTROLADO_CONSULTANDO_USUARIO =
                 "Ocurrió un problema inesperado al consultar la cuenta. Intenta de nuevo o avisa al administrador.";
 
+        public static final String USUARIO_ERROR_PROBLEMA_ACTUALIZANDO_USUARIO =
+                "No fue posible cambiar el estado de la cuenta. Por favor intenta nuevamente.";
+        public static final String USUARIO_ERROR_PROBLEMA_NO_CONTROLADO_ACTUALIZANDO_USUARIO =
+                "Ocurrió un problema inesperado al cambiar el estado de la cuenta. Avisa al administrador.";
+
         private UsuarioMySqlDAO() {
         }
     }
@@ -153,6 +158,18 @@ public final class CatalogoMensajes {
                 "Escribe tu correo y tu contraseña.";
         public static final String USUARIO_ERROR_CREDENCIALES_INCORRECTAS = "Correo o contraseña incorrectos.";
 
+        public static final String USUARIO_ERROR_USUARIO_NO_ENCONTRADO = "No encontramos esa cuenta.";
+        public static final String USUARIO_ERROR_ESTADO_NO_VALIDO =
+                "El estado no es válido. Elige ACTIVO, SUSPENDIDO o BLOQUEADO.";
+        public static final String USUARIO_ERROR_NO_PUEDES_CAMBIAR_TU_CUENTA =
+                "No puedes cambiar el estado de tu propia cuenta.";
+        public static final String USUARIO_ERROR_CUENTA_ADMIN_NO_MODIFICABLE =
+                "Las cuentas de administrador no se pueden suspender ni bloquear.";
+        public static final String USUARIO_ERROR_MOTIVO_OBLIGATORIO =
+                "Indica el motivo de la suspensión o el bloqueo.";
+        public static final String USUARIO_ERROR_MOTIVO_MUY_LARGO =
+                "El motivo es muy largo (máximo 200 caracteres).";
+
         private UsuarioNegocioImpl() {
         }
     }
@@ -166,6 +183,11 @@ public final class CatalogoMensajes {
 
         public static final String USUARIO_ERROR_PROBLEMA_INESPERADO_INICIANDO_SESION =
                 "No pudimos iniciar tu sesión. Intenta de nuevo en unos minutos.";
+
+        public static final String USUARIO_ERROR_PROBLEMA_INESPERADO_CONSULTANDO_USUARIOS =
+                "No pudimos cargar las cuentas. Intenta de nuevo en unos minutos.";
+        public static final String USUARIO_ERROR_PROBLEMA_INESPERADO_CAMBIANDO_ESTADO =
+                "No fue posible cambiar el estado de la cuenta. Por favor intenta nuevamente.";
 
         private UsuarioFachadaImpl() {
         }
@@ -362,6 +384,11 @@ public final class CatalogoMensajes {
         public static final String USUARIO_ERROR_REGISTRO_TECNICO_NO_ENCONTRADO =
                 "No encontramos tu registro de técnico. Cierra sesión, vuelve a entrar o avisa al administrador.";
 
+        public static final String USUARIO_ERROR_CONTACTO_NO_DISPONIBLE =
+                "El técnico compartirá sus datos de contacto cuando acepte tu solicitud.";
+        public static final String USUARIO_ERROR_SOLO_SE_FINALIZA_ACEPTADA =
+                "Solo puedes marcar como realizado un servicio que el técnico ya aceptó.";
+
         private SolicitudNegocioImpl() {
         }
     }
@@ -377,6 +404,9 @@ public final class CatalogoMensajes {
                 "No fue posible aceptar la solicitud. Por favor intenta nuevamente.";
         public static final String USUARIO_ERROR_PROBLEMA_INESPERADO_RECHAZANDO_SOLICITUD =
                 "No fue posible rechazar la solicitud. Por favor intenta nuevamente.";
+
+        public static final String USUARIO_ERROR_PROBLEMA_INESPERADO_FINALIZANDO_SOLICITUD =
+                "No fue posible finalizar el servicio. Por favor intenta nuevamente.";
 
         private SolicitudFachadaImpl() {
         }
@@ -399,6 +429,9 @@ public final class CatalogoMensajes {
                 "Aceptaste la solicitud. El ciudadano ya puede ver tus datos de contacto para coordinar el trabajo.";
         public static final String USUARIO_SOLICITUD_RECHAZADA = "Rechazaste la solicitud. Le informaremos al ciudadano.";
 
+        public static final String USUARIO_SOLICITUD_FINALIZADA =
+                "Marcaste el servicio como finalizado. El ciudadano ya puede calificarte.";
+
         private SolicitudController() {
         }
     }
@@ -409,6 +442,97 @@ public final class CatalogoMensajes {
         public static final String USUARIO_ERROR_NO_HAY_SESION = "Inicia sesión para continuar.";
 
         private SesionController() {
+        }
+    }
+
+    public static final class CalificacionMySqlDAO {
+        public static final String USUARIO_ERROR_SOLICITUD_YA_CALIFICADA = "Ya calificaste este servicio.";
+        public static final String USUARIO_ERROR_PROBLEMA_CREANDO_CALIFICACION =
+                "No fue posible guardar tu calificación. Por favor intenta nuevamente.";
+        public static final String USUARIO_ERROR_PROBLEMA_NO_CONTROLADO_CREANDO_CALIFICACION =
+                "Ocurrió un problema inesperado al guardar tu calificación. Avisa al administrador.";
+        public static final String USUARIO_ERROR_PROBLEMA_CONSULTANDO_CALIFICACION =
+                "No pudimos consultar las calificaciones. Intenta de nuevo en unos minutos.";
+        public static final String USUARIO_ERROR_PROBLEMA_NO_CONTROLADO_CONSULTANDO_CALIFICACION =
+                "Ocurrió un problema inesperado al consultar las calificaciones. Avisa al administrador.";
+        public static final String USUARIO_ERROR_PROBLEMA_ACTUALIZANDO_CALIFICACION =
+                "No fue posible actualizar el comentario. Por favor intenta nuevamente.";
+        public static final String USUARIO_ERROR_PROBLEMA_NO_CONTROLADO_ACTUALIZANDO_CALIFICACION =
+                "Ocurrió un problema inesperado al actualizar el comentario. Avisa al administrador.";
+        public static final String USUARIO_ERROR_PROBLEMA_ACTUALIZANDO_PROMEDIO =
+                "Guardamos tu calificación, pero no pudimos actualizar el promedio del técnico. Avisa al administrador.";
+        public static final String USUARIO_ERROR_PROBLEMA_NO_CONTROLADO_ACTUALIZANDO_PROMEDIO =
+                "Ocurrió un problema inesperado al actualizar el promedio del técnico. Avisa al administrador.";
+
+        private CalificacionMySqlDAO() {
+        }
+    }
+
+    public static final class CalificacionNegocioImpl {
+        public static final String USUARIO_ERROR_SOLICITUD_NO_INDICADA =
+                "Falta indicar el servicio que quieres calificar.";
+        public static final String USUARIO_ERROR_ESTRELLAS_NO_VALIDAS =
+                "Elige de 1 a 5 estrellas para calificar al técnico.";
+        public static final String USUARIO_ERROR_COMENTARIO_LONGITUD_NO_VALIDA =
+                "Tu comentario debe tener entre 10 y 300 caracteres.";
+        public static final String USUARIO_ERROR_SOLICITUD_NO_ENCONTRADA = "No encontramos esa solicitud.";
+        public static final String USUARIO_ERROR_SERVICIO_NO_FINALIZADO =
+                "Solo puedes calificar al técnico cuando el servicio ya fue finalizado.";
+        public static final String USUARIO_ERROR_SOLICITUD_YA_CALIFICADA = "Ya calificaste este servicio.";
+        public static final String USUARIO_ERROR_TECNICO_NO_INDICADO = "Falta indicar el técnico.";
+        public static final String USUARIO_ERROR_CALIFICACION_NO_ENCONTRADA = "No encontramos esa calificación.";
+        public static final String USUARIO_ERROR_MOTIVO_MODERACION_NO_VALIDO =
+                "Elige el motivo: lenguaje ofensivo, información personal, contenido no relacionado u otro.";
+
+        private CalificacionNegocioImpl() {
+        }
+    }
+
+    public static final class CalificacionFachadaImpl {
+        public static final String USUARIO_ERROR_PROBLEMA_INESPERADO_CALIFICANDO =
+                "No fue posible guardar tu calificación. Por favor intenta nuevamente.";
+        public static final String USUARIO_ERROR_PROBLEMA_INESPERADO_CONSULTANDO_CALIFICACIONES =
+                "No pudimos cargar las calificaciones. Intenta de nuevo en unos minutos.";
+        public static final String USUARIO_ERROR_PROBLEMA_INESPERADO_MODERANDO =
+                "No fue posible cambiar la visibilidad del comentario. Por favor intenta nuevamente.";
+
+        private CalificacionFachadaImpl() {
+        }
+    }
+
+    public static final class CalificacionController {
+        public static final String USUARIO_CALIFICACION_REGISTRADA =
+                "¡Gracias! Tu calificación quedó registrada y el promedio del técnico se actualizó.";
+        public static final String USUARIO_SIN_CALIFICACIONES = "Este técnico aún no tiene calificaciones.";
+        public static final String USUARIO_ERROR_NO_HAY_SESION = "Inicia sesión para ver o dar calificaciones.";
+        public static final String USUARIO_ERROR_SOLO_CIUDADANOS =
+                "Solo los ciudadanos pueden calificar a los técnicos.";
+
+        private CalificacionController() {
+        }
+    }
+
+    public static final class AdminUsuarioController {
+        public static final String USUARIO_ERROR_NO_HAY_SESION = "Inicia sesión como administrador para continuar.";
+        public static final String USUARIO_ERROR_SOLO_ADMINISTRADORES =
+                "Solo los administradores pueden gestionar las cuentas.";
+        public static final String USUARIO_SIN_USUARIOS = "Aún no hay cuentas registradas.";
+        public static final String USUARIO_ESTADO_ACTUALIZADO = "El estado de la cuenta se actualizó correctamente.";
+
+        private AdminUsuarioController() {
+        }
+    }
+
+    public static final class AdminCalificacionController {
+        public static final String USUARIO_ERROR_NO_HAY_SESION = "Inicia sesión como administrador para continuar.";
+        public static final String USUARIO_ERROR_SOLO_ADMINISTRADORES =
+                "Solo los administradores pueden moderar comentarios.";
+        public static final String USUARIO_SIN_CALIFICACIONES = "Aún no hay calificaciones para moderar.";
+        public static final String USUARIO_COMENTARIO_OCULTO =
+                "El comentario quedó oculto para los demás usuarios. Las estrellas siguen contando en el promedio.";
+        public static final String USUARIO_COMENTARIO_VISIBLE = "El comentario volvió a mostrarse.";
+
+        private AdminCalificacionController() {
         }
     }
 }

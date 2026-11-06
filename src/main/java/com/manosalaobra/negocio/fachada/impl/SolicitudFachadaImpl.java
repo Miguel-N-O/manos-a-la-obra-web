@@ -89,6 +89,23 @@ public final class SolicitudFachadaImpl implements SolicitudFachada {
     }
 
     @Override
+    public SolicitudDTO consultarContactoDelTecnico(UUID ciudadanoId, UUID solicitudId) {
+        try {
+            return SolicitudEnsambladorDTO.getInstancia().convertirADTO(
+                    solicitudNegocio.consultarContactoDelTecnico(ciudadanoId, solicitudId));
+        } catch (ManosALaObraExcepcion excepcion) {
+            throw excepcion;
+        } catch (Exception excepcion) {
+            REGISTRO.error("Problema inesperado consultando el contacto del técnico", excepcion);
+            throw ManosALaObraFachadaExcepcion.crear(
+                    CatalogoMensajes.SolicitudFachadaImpl.USUARIO_ERROR_PROBLEMA_INESPERADO_CONSULTANDO_SOLICITUDES,
+                    excepcion.getMessage(), excepcion);
+        } finally {
+            daoFactory.cerrarConexion();
+        }
+    }
+
+    @Override
     public List<SolicitudDTO> consultarRecibidas(UUID usuarioTecnicoId) {
         try {
             return SolicitudEnsambladorDTO.getInstancia().convertirADTO(
@@ -194,6 +211,32 @@ public final class SolicitudFachadaImpl implements SolicitudFachada {
             REGISTRO.error("Problema inesperado rechazando una solicitud", excepcion);
             throw ManosALaObraFachadaExcepcion.crear(
                     CatalogoMensajes.SolicitudFachadaImpl.USUARIO_ERROR_PROBLEMA_INESPERADO_RECHAZANDO_SOLICITUD,
+                    excepcion.getMessage(), excepcion);
+        } finally {
+            daoFactory.cerrarConexion();
+        }
+    }
+
+    @Override
+    public SolicitudDTO finalizar(UUID ciudadanoId, UUID solicitudId) {
+        boolean transaccionIniciada = false;
+        try {
+            daoFactory.iniciarTransaccion();
+            transaccionIniciada = true;
+
+            SolicitudDominio finalizada = solicitudNegocio.finalizar(ciudadanoId, solicitudId);
+
+            daoFactory.confirmarTransaccion();
+            transaccionIniciada = false;
+            return SolicitudEnsambladorDTO.getInstancia().convertirADTO(finalizada);
+        } catch (ManosALaObraExcepcion excepcion) {
+            cancelarSiHaceFalta(transaccionIniciada);
+            throw excepcion;
+        } catch (Exception excepcion) {
+            cancelarSiHaceFalta(transaccionIniciada);
+            REGISTRO.error("Problema inesperado finalizando una solicitud", excepcion);
+            throw ManosALaObraFachadaExcepcion.crear(
+                    CatalogoMensajes.SolicitudFachadaImpl.USUARIO_ERROR_PROBLEMA_INESPERADO_FINALIZANDO_SOLICITUD,
                     excepcion.getMessage(), excepcion);
         } finally {
             daoFactory.cerrarConexion();

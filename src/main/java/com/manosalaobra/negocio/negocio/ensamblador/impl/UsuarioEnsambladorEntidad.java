@@ -21,7 +21,7 @@ public final class UsuarioEnsambladorEntidad implements EnsambladorEntidad<Usuar
     public UsuarioEntidad convertirAEntidad(UsuarioDominio dominio) {
         UsuarioDominio dominioSeguro = UtilObjeto.obtenerValorDefectoSiValorOriginalEsNulo(
                 dominio, new UsuarioDominio.Builder().build());
-        return new UsuarioEntidad(
+        UsuarioEntidad entidad = new UsuarioEntidad(
                 dominioSeguro.getId(),
                 RolEnsambladorEntidad.getInstancia().convertirAEntidad(dominioSeguro.getRol()),
                 EstadoUsuarioEnsambladorEntidad.getInstancia().convertirAEntidad(dominioSeguro.getEstadoUsuario()),
@@ -30,6 +30,8 @@ public final class UsuarioEnsambladorEntidad implements EnsambladorEntidad<Usuar
                 dominioSeguro.getClaveHash(),
                 IndicativoPaisEnsambladorEntidad.getInstancia().convertirAEntidad(dominioSeguro.getIndicativoPais()),
                 dominioSeguro.getNumeroTelefono());
+        entidad.setMotivoEstado(dominioSeguro.getMotivoEstado());
+        return entidad;
     }
 
     @Override
@@ -47,6 +49,7 @@ public final class UsuarioEnsambladorEntidad implements EnsambladorEntidad<Usuar
                 .indicativoPais(IndicativoPaisEnsambladorEntidad.getInstancia()
                         .convertirADominio(entidadSegura.getIndicativoPais()))
                 .numeroTelefono(entidadSegura.getNumeroTelefono())
+                .motivoEstado(entidadSegura.getMotivoEstado())
                 .build();
     }
 }

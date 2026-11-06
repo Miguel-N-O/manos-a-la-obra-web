@@ -3,6 +3,7 @@ package com.manosalaobra.negocio.negocio.impl;
 import com.manosalaobra.dao.factoria.DAOFactory;
 import com.manosalaobra.dominio.EstadoSolicitudDominio;
 import com.manosalaobra.dominio.SolicitudDominio;
+import com.manosalaobra.dominio.TecnicoDominio;
 import com.manosalaobra.dominio.UsuarioDominio;
 import com.manosalaobra.entidad.EstadoSolicitudEntidad;
 import com.manosalaobra.entidad.SolicitudEntidad;
@@ -11,6 +12,8 @@ import com.manosalaobra.negocio.negocio.SolicitudNegocio;
 import com.manosalaobra.negocio.negocio.ensamblador.impl.EstadoSolicitudEnsambladorEntidad;
 import com.manosalaobra.negocio.negocio.ensamblador.impl.SolicitudEnsambladorEntidad;
 import com.manosalaobra.negocio.negocio.reglas.impl.barrio.AsegurarBarrioExisteRegla;
+import com.manosalaobra.negocio.negocio.reglas.impl.solicitud.AsegurarContactoDisponibleRegla;
+import com.manosalaobra.negocio.negocio.reglas.impl.solicitud.AsegurarSolicitudAceptadaRegla;
 import com.manosalaobra.negocio.negocio.reglas.impl.solicitud.AsegurarSolicitudPendienteRegla;
 import com.manosalaobra.negocio.negocio.reglas.impl.solicitud.ValidarMotivoRechazoRegla;
 import com.manosalaobra.negocio.negocio.reglas.impl.solicitud.ValidarDatosCrearSolicitudRegla;
@@ -58,7 +61,7 @@ public final class SolicitudNegocioImpl implements SolicitudNegocio {
     public List<SolicitudDominio> consultarDelCiudadano(UUID ciudadanoId) {
         SolicitudEntidad filtro = new SolicitudEntidad();
         filtro.getCiudadano().setId(ciudadanoId);
-        return convertirADominio(consultarConFiltroSeguro(ciudadanoId, filtro), this::sinContactoDelCiudadano);
+        return convertirADominio(consultarConFiltroSeguro(ciudadanoId, filtro), this::paraElCiudadano);
     }
 
     // CU19: el ciudadano solo puede ver sus propias solicitudes
@@ -71,7 +74,22 @@ public final class SolicitudNegocioImpl implements SolicitudNegocio {
         SolicitudEntidad filtro = new SolicitudEntidad();
         filtro.setId(solicitudId);
         filtro.getCiudadano().setId(ciudadanoId);
-        return sinContactoDelCiudadano(obtenerUnica(consultarConFiltroSeguro(ciudadanoId, filtro)));
+        return paraElCiudadano(obtenerUnica(consultarConFiltroSeguro(ciudadanoId, filtro)));
+    }
+
+    // HU-13: el ciudadano recibe el teléfono del técnico solo cuando el técnico aceptó la solicitud
+    @Override
+    public SolicitudDominio consultarContactoDelTecnico(UUID ciudadanoId, UUID solicitudId) {
+        if (UtilUUID.esValorDefecto(solicitudId)) {
+            throw ManosALaObraNegocioExcepcion.crear(
+                    CatalogoMensajes.SolicitudNegocioImpl.USUARIO_ERROR_SOLICITUD_NO_ENCONTRADA);
+        }
+        SolicitudEntidad filtro = new SolicitudEntidad();
+        filtro.setId(solicitudId);
+        filtro.getCiudadano().setId(ciudadanoId);
+        SolicitudDominio solicitud = obtenerUnica(consultarConFiltroSeguro(ciudadanoId, filtro));
+        AsegurarContactoDisponibleRegla.obtenerInstancia().ejecutar(solicitud);
+        return sinContactoDelCiudadano(solicitud);
     }
 
     // HU-10 CA-02 y CA-03: solo las dirigidas al técnico, con las pendientes primero (CU18)
@@ -119,6 +137,27 @@ public final class SolicitudNegocioImpl implements SolicitudNegocio {
         return consultarUnaRecibida(usuarioTecnicoId, solicitudId);
     }
 
+    // HU-14: el ciudadano marca como realizado un servicio que el técnico ya aceptó; desde ahí puede calificar
+    @Override
+    public SolicitudDominio finalizar(UUID ciudadanoId, UUID solicitudId) {
+        if (UtilUUID.esValorDefecto(solicitudId)) {
+            throw ManosALaObraNegocioExcepcion.crear(
+                    CatalogoMensajes.SolicitudNegocioImpl.USUARIO_ERROR_SOLICITUD_NO_ENCONTRADA);
+        }
+        SolicitudEntidad filtro = new SolicitudEntidad();
+        filtro.setId(solicitudId);
+        filtro.getCiudadano().setId(ciudadanoId);
+        SolicitudDominio solicitud = obtenerUnica(consultarConFiltroSeguro(ciudadanoId, filtro));
+        AsegurarSolicitudAceptadaRegla.obtenerInstancia().ejecutar(solicitud);
+
+        SolicitudDominio finalizada = copiar(solicitud)
+                .estadoSolicitud(consultarEstadoPorNombre(EstadoSolicitudDominio.FINALIZADA))
+                .build();
+        daoFactory.obtenerSolicitudDAO().actualizar(finalizada.getId(),
+                SolicitudEnsambladorEntidad.getInstancia().convertirAEntidad(finalizada));
+        return consultarUnaDelCiudadano(ciudadanoId, solicitudId);
+    }
+
     // HU-12 / CU12: el técnico rechaza una solicitud suya que sigue PENDIENTE; el motivo es opcional
     @Override
     public SolicitudDominio rechazar(UUID usuarioTecnicoId, UUID solicitudId, String motivoRechazo) {
@@ -138,11 +177,39 @@ public final class SolicitudNegocioImpl implements SolicitudNegocio {
 
     // CU18: el técnico ve el teléfono del ciudadano solo cuando aceptó la solicitud
     private SolicitudDominio conContactoSegunEstado(SolicitudDominio solicitud) {
-        String estado = solicitud.getEstadoSolicitud().getNombre();
-        if (EstadoSolicitudDominio.ACEPTADA.equals(estado) || EstadoSolicitudDominio.FINALIZADA.equals(estado)) {
+        if (AsegurarContactoDisponibleRegla.contactoHabilitado(solicitud)) {
             return solicitud;
         }
         return sinContactoDelCiudadano(solicitud);
+    }
+
+    // El ciudadano nunca ve el teléfono de otros ciudadanos ni el del técnico antes de que este acepte (HU-13)
+    private SolicitudDominio paraElCiudadano(SolicitudDominio solicitud) {
+        SolicitudDominio sinContactoDelCiudadano = sinContactoDelCiudadano(solicitud);
+        if (AsegurarContactoDisponibleRegla.contactoHabilitado(solicitud)) {
+            return sinContactoDelCiudadano;
+        }
+        return sinContactoDelTecnico(sinContactoDelCiudadano);
+    }
+
+    private SolicitudDominio sinContactoDelTecnico(SolicitudDominio solicitud) {
+        TecnicoDominio tecnico = solicitud.getTecnico();
+        UsuarioDominio soloNombre = new UsuarioDominio.Builder()
+                .id(tecnico.getUsuario().getId())
+                .nombre(tecnico.getUsuario().getNombre())
+                .build();
+        TecnicoDominio sinContacto = new TecnicoDominio.Builder()
+                .id(tecnico.getId())
+                .usuario(soloNombre)
+                .servicio(tecnico.getServicio())
+                .barrio(tecnico.getBarrio())
+                .tarifa(tecnico.getTarifa())
+                .tipoTarifa(tecnico.getTipoTarifa())
+                .experiencia(tecnico.getExperiencia())
+                .descripcion(tecnico.getDescripcion())
+                .promedio(tecnico.getPromedio())
+                .build();
+        return copiar(solicitud).tecnico(sinContacto).build();
     }
 
     private SolicitudDominio sinContactoDelCiudadano(SolicitudDominio solicitud) {

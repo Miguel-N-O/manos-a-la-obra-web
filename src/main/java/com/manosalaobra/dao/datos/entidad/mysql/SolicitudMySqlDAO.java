@@ -45,8 +45,8 @@ public final class SolicitudMySqlDAO extends SqlDAO implements SolicitudDAO {
             UPDATE Solicitud SET estado_solicitud_id = ?, motivo_rechazo = ?, respondida_en = ? WHERE id = ?
             """;
 
-    // Trae el teléfono del ciudadano, pero el negocio solo lo entrega al técnico si aceptó la solicitud (CU18).
-    // El teléfono del técnico no se trae: se entrega al ciudadano en HU-13.
+    // Trae el teléfono del ciudadano y el del técnico, pero el negocio solo los entrega cuando el técnico aceptó
+    // la solicitud: el del ciudadano al técnico (CU18) y el del técnico al ciudadano (HU-13).
     private static final String SELECCIONAR = """
             SELECT s.id, s.descripcion, s.fecha_hora, s.motivo_rechazo, s.notificada, s.respondida_en, s.creada_en,
                    es.id AS estado_id, es.nombre AS estado_nombre, es.activo AS estado_activo,
@@ -55,6 +55,9 @@ public final class SolicitudMySqlDAO extends SqlDAO implements SolicitudDAO {
                    ip.activo AS indicativo_activo,
                    t.id AS tecnico_id, t.tarifa AS tecnico_tarifa, t.tipo_tarifa AS tecnico_tipo_tarifa,
                    ut.id AS tecnico_usuario_id, ut.nombre AS tecnico_nombre,
+                   ut.numero_telefono AS tecnico_telefono,
+                   ipt.id AS tecnico_indicativo_id, ipt.pais AS tecnico_indicativo_pais,
+                   ipt.indicativo AS tecnico_indicativo_valor, ipt.activo AS tecnico_indicativo_activo,
                    sv.id AS servicio_id, sv.nombre AS servicio_nombre, sv.activo AS servicio_activo,
                    b.id AS barrio_id, b.nombre AS barrio_nombre, b.activo AS barrio_activo,
                    c.id AS ciudad_id, c.nombre AS ciudad_nombre, c.activo AS ciudad_activo
@@ -64,6 +67,7 @@ public final class SolicitudMySqlDAO extends SqlDAO implements SolicitudDAO {
             JOIN IndicativoPais ip ON ip.id = ci.indicativo_pais_id
             JOIN Tecnico t ON t.id = s.tecnico_id
             JOIN Usuario ut ON ut.id = t.usuario_id
+            JOIN IndicativoPais ipt ON ipt.id = ut.indicativo_pais_id
             LEFT JOIN Servicio sv ON sv.id = t.servicio_id
             JOIN Barrio b ON b.id = s.barrio_id
             JOIN Ciudad c ON c.id = b.ciudad_id
@@ -209,6 +213,12 @@ public final class SolicitudMySqlDAO extends SqlDAO implements SolicitudDAO {
         UsuarioEntidad usuarioTecnico = new UsuarioEntidad();
         usuarioTecnico.setId(UtilUUID.convertirAUUID(fila.getString("tecnico_usuario_id")));
         usuarioTecnico.setNombre(fila.getString("tecnico_nombre"));
+        usuarioTecnico.setNumeroTelefono(fila.getString("tecnico_telefono"));
+        usuarioTecnico.setIndicativoPais(new IndicativoPaisEntidad(
+                UtilUUID.convertirAUUID(fila.getString("tecnico_indicativo_id")),
+                fila.getString("tecnico_indicativo_pais"),
+                fila.getString("tecnico_indicativo_valor"),
+                fila.getBoolean("tecnico_indicativo_activo")));
         ServicioEntidad servicio = new ServicioEntidad(
                 UtilUUID.convertirAUUID(UtilUUID.obtenerValorDefectoComoTexto(fila.getString("servicio_id"))),
                 fila.getString("servicio_nombre"),

@@ -31,8 +31,13 @@ public final class UsuarioMySqlDAO extends SqlDAO implements UsuarioDAO {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """;
 
+    // HU-16: suspender, bloquear o reactivar una cuenta
+    private static final String ACTUALIZAR_ESTADO = """
+            UPDATE Usuario SET estado_usuario_id = ?, motivo_estado = ? WHERE id = ?
+            """;
+
     private static final String SELECCIONAR = """
-            SELECT u.id, u.nombre, u.correo, u.clave_hash, u.numero_telefono,
+            SELECT u.id, u.nombre, u.correo, u.clave_hash, u.numero_telefono, u.motivo_estado,
                    r.id AS rol_id, r.nombre AS rol_nombre, r.activo AS rol_activo,
                    e.id AS estado_usuario_id, e.nombre AS estado_usuario_nombre, e.activo AS estado_usuario_activo,
                    i.id AS indicativo_pais_id, i.pais AS indicativo_pais_pais,
@@ -72,6 +77,24 @@ public final class UsuarioMySqlDAO extends SqlDAO implements UsuarioDAO {
         } catch (Exception excepcion) {
             throw ManosALaObraDatosExcepcion.crear(
                     CatalogoMensajes.UsuarioMySqlDAO.USUARIO_ERROR_PROBLEMA_NO_CONTROLADO_CREANDO_USUARIO,
+                    excepcion.getMessage(), excepcion);
+        }
+    }
+
+    @Override
+    public void actualizar(UUID id, UsuarioEntidad entidad) {
+        try (PreparedStatement sentencia = getConexion().prepareStatement(ACTUALIZAR_ESTADO)) {
+            sentencia.setString(1, entidad.getEstadoUsuario().getId().toString());
+            sentencia.setString(2, UtilTexto.getUtilTexto().esVacia(entidad.getMotivoEstado()) ? null : entidad.getMotivoEstado());
+            sentencia.setString(3, id.toString());
+            sentencia.executeUpdate();
+        } catch (SQLException excepcion) {
+            throw ManosALaObraDatosExcepcion.crear(
+                    CatalogoMensajes.UsuarioMySqlDAO.USUARIO_ERROR_PROBLEMA_ACTUALIZANDO_USUARIO,
+                    excepcion.getMessage(), excepcion);
+        } catch (Exception excepcion) {
+            throw ManosALaObraDatosExcepcion.crear(
+                    CatalogoMensajes.UsuarioMySqlDAO.USUARIO_ERROR_PROBLEMA_NO_CONTROLADO_ACTUALIZANDO_USUARIO,
                     excepcion.getMessage(), excepcion);
         }
     }
@@ -157,7 +180,7 @@ public final class UsuarioMySqlDAO extends SqlDAO implements UsuarioDAO {
                 fila.getString("indicativo_pais_pais"),
                 fila.getString("indicativo_pais_indicativo"),
                 fila.getBoolean("indicativo_pais_activo"));
-        return new UsuarioEntidad(
+        UsuarioEntidad usuario = new UsuarioEntidad(
                 UtilUUID.convertirAUUID(fila.getString("id")),
                 rol,
                 estadoUsuario,
@@ -166,5 +189,7 @@ public final class UsuarioMySqlDAO extends SqlDAO implements UsuarioDAO {
                 fila.getString("clave_hash"),
                 indicativoPais,
                 fila.getString("numero_telefono"));
+        usuario.setMotivoEstado(fila.getString("motivo_estado"));
+        return usuario;
     }
 }

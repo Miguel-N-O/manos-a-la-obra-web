@@ -109,6 +109,19 @@ public class SolicitudController extends AbstractRestController {
         return ResponseEntity.ok(RespuestaOk.crear(rechazada, CatalogoMensajes.SolicitudController.USUARIO_SOLICITUD_RECHAZADA));
     }
 
+    // HU-14: el ciudadano marca como realizado el servicio de una solicitud aceptada y ya puede calificar al técnico
+    @PutMapping("/{id}/finalizar")
+    public ResponseEntity<Respuesta<SolicitudDTO>> finalizar(@PathVariable("id") UUID id,
+            HttpServletRequest peticion) {
+        ResponseEntity<Respuesta<SolicitudDTO>> sinPermiso = validarSesionDeCiudadano(peticion);
+        if (sinPermiso != null) {
+            return sinPermiso;
+        }
+        SolicitudFachada solicitudFachada = new SolicitudFachadaImpl();
+        SolicitudDTO finalizada = solicitudFachada.finalizar(SesionUsuario.idActual(peticion), id);
+        return ResponseEntity.ok(RespuestaOk.crear(finalizada, CatalogoMensajes.SolicitudController.USUARIO_SOLICITUD_FINALIZADA));
+    }
+
     @GetMapping("/recibidas/{id}")
     public ResponseEntity<Respuesta<SolicitudDTO>> consultarUnaRecibida(@PathVariable("id") UUID id,
             HttpServletRequest peticion) {
@@ -119,6 +132,19 @@ public class SolicitudController extends AbstractRestController {
         SolicitudFachada solicitudFachada = new SolicitudFachadaImpl();
         return ResponseEntity.ok(RespuestaOk.crear(
                 List.of(solicitudFachada.consultarUnaRecibida(SesionUsuario.idActual(peticion), id))));
+    }
+
+    // HU-13: datos de contacto del técnico, disponibles solo después de que acepte la solicitud
+    @GetMapping("/{id}/contacto")
+    public ResponseEntity<Respuesta<SolicitudDTO>> consultarContactoDelTecnico(@PathVariable("id") UUID id,
+            HttpServletRequest peticion) {
+        ResponseEntity<Respuesta<SolicitudDTO>> sinPermiso = validarSesionDeCiudadano(peticion);
+        if (sinPermiso != null) {
+            return sinPermiso;
+        }
+        SolicitudFachada solicitudFachada = new SolicitudFachadaImpl();
+        return ResponseEntity.ok(RespuestaOk.crear(
+                List.of(solicitudFachada.consultarContactoDelTecnico(SesionUsuario.idActual(peticion), id))));
     }
 
     @GetMapping("/{id}")

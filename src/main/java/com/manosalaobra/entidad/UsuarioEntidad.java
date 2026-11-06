@@ -16,6 +16,7 @@ public final class UsuarioEntidad {
     private String claveHash;
     private IndicativoPaisEntidad indicativoPais;
     private String numeroTelefono;
+    private String motivoEstado = UtilTexto.VACIO;
 
     public UsuarioEntidad() {
         setId(UtilUUID.obtenerUUIDDefecto());
@@ -101,5 +102,13 @@ public final class UsuarioEntidad {
 
     public void setNumeroTelefono(String numeroTelefono) {
         this.numeroTelefono = UtilTexto.getUtilTexto().quitarEspacioEnBlanco(numeroTelefono);
+    }
+
+    public String getMotivoEstado() {
+        return motivoEstado;
+    }
+
+    public void setMotivoEstado(String motivoEstado) {
+        this.motivoEstado = UtilTexto.getUtilTexto().quitarEspacioEnBlanco(motivoEstado);
     }
 }

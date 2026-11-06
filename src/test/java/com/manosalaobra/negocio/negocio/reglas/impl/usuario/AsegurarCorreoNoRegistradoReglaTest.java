@@ -9,6 +9,7 @@ import com.manosalaobra.dao.datos.entidad.EstadoSolicitudDAO;
 import com.manosalaobra.dao.datos.entidad.ServicioDAO;
 import com.manosalaobra.dao.datos.entidad.SolicitudDAO;
 import com.manosalaobra.dao.datos.entidad.TecnicoDAO;
+import com.manosalaobra.dao.datos.entidad.CalificacionDAO;
 import com.manosalaobra.dao.datos.entidad.EstadoUsuarioDAO;
 import com.manosalaobra.dao.datos.entidad.IndicativoPaisDAO;
 import com.manosalaobra.dao.datos.entidad.RolDAO;
@@ -31,6 +32,10 @@ class AsegurarCorreoNoRegistradoReglaTest {
         UsuarioDAO usuarioDAO = new UsuarioDAO() {
             @Override
             public void crear(UsuarioEntidad entidad) {
+            }
+
+            @Override
+            public void actualizar(UUID id, UsuarioEntidad entidad) {
             }
 
             @Override
@@ -95,6 +100,11 @@ class AsegurarCorreoNoRegistradoReglaTest {
 
             @Override
             public SolicitudDAO obtenerSolicitudDAO() {
+                return null;
+            }
+
+            @Override
+            public CalificacionDAO obtenerCalificacionDAO() {
                 return null;
             }
         };

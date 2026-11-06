@@ -63,6 +63,7 @@ CREATE TABLE Usuario (
   clave_hash         VARCHAR(100) NOT NULL,
   indicativo_pais_id  CHAR(36) NOT NULL,
   numero_telefono    VARCHAR(14) NOT NULL,
+  motivo_estado      VARCHAR(200) NULL,
   creado_en          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_usuario_rol_id FOREIGN KEY (rol_id) REFERENCES Rol (id),
   CONSTRAINT fk_usuario_estado_usuario_id FOREIGN KEY (estado_usuario_id) REFERENCES EstadoUsuario (id),
@@ -128,7 +129,10 @@ CREATE TABLE Calificacion (
   estrellas     TINYINT NOT NULL,
   comentario    VARCHAR(300) NOT NULL DEFAULT '',
   visible       BOOLEAN NOT NULL DEFAULT TRUE,
+  motivo_moderacion VARCHAR(30) NULL,
   creada_en     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT ck_calificacion_motivo_moderacion CHECK (motivo_moderacion IN
+    ('LENGUAJE_OFENSIVO', 'INFORMACION_PERSONAL', 'CONTENIDO_NO_RELACIONADO', 'OTRO')),
   CONSTRAINT fk_calificacion_solicitud_id FOREIGN KEY (solicitud_id) REFERENCES Solicitud (id),
   CONSTRAINT uk_calificacion_solicitud_id UNIQUE (solicitud_id),
   CONSTRAINT ck_calificacion_estrellas CHECK (estrellas BETWEEN 1 AND 5)
