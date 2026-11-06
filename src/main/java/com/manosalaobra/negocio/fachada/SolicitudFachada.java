@@ -12,6 +12,8 @@ public interface SolicitudFachada {
 
     SolicitudDTO consultarUnaDelCiudadano(UUID ciudadanoId, UUID solicitudId);
 
+    SolicitudDTO consultarContactoDelTecnico(UUID ciudadanoId, UUID solicitudId);
+
     List<SolicitudDTO> consultarRecibidas(UUID usuarioTecnicoId);
 
     SolicitudDTO consultarUnaRecibida(UUID usuarioTecnicoId, UUID solicitudId);
@@ -21,4 +23,6 @@ public interface SolicitudFachada {
     SolicitudDTO aceptar(UUID usuarioTecnicoId, UUID solicitudId);
 
     SolicitudDTO rechazar(UUID usuarioTecnicoId, UUID solicitudId, SolicitudDTO respuesta);
+
+    SolicitudDTO finalizar(UUID ciudadanoId, UUID solicitudId);
 }

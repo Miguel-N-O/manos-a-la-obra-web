@@ -2,6 +2,7 @@ package com.manosalaobra.negocio.fachada.ensamblador.impl;
 
 import com.manosalaobra.dominio.SolicitudDominio;
 import com.manosalaobra.dto.SolicitudDTO;
+import com.manosalaobra.dto.TecnicoDTO;
 import com.manosalaobra.dto.UsuarioDTO;
 import com.manosalaobra.negocio.fachada.ensamblador.EnsambladorDTO;
 import com.manosalaobra.transversal.utilitarios.UtilObjeto;
@@ -34,7 +35,12 @@ public final class SolicitudEnsambladorDTO implements EnsambladorDTO<SolicitudDo
         SolicitudDTO dto = new SolicitudDTO();
         dto.setId(dominioSeguro.getId());
         dto.setCiudadano(ciudadano);
-        dto.setTecnico(TecnicoEnsambladorDTO.getInstancia().convertirADTO(dominioSeguro.getTecnico()));
+        TecnicoDTO tecnico = TecnicoEnsambladorDTO.getInstancia().convertirADTO(dominioSeguro.getTecnico());
+        // HU-13: igual que con el ciudadano, el teléfono del técnico sale solo si el negocio lo dejó (aceptada)
+        tecnico.getUsuario().setIndicativoPais(IndicativoPaisEnsambladorDTO.getInstancia()
+                .convertirADTO(dominioSeguro.getTecnico().getUsuario().getIndicativoPais()));
+        tecnico.getUsuario().setNumeroTelefono(dominioSeguro.getTecnico().getUsuario().getNumeroTelefono());
+        dto.setTecnico(tecnico);
         dto.setBarrio(BarrioEnsambladorDTO.getInstancia().convertirADTO(dominioSeguro.getBarrio()));
         dto.setDescripcion(dominioSeguro.getDescripcion());
         dto.setFechaHora(dominioSeguro.getFechaHora());

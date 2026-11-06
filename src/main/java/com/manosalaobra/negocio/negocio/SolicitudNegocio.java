@@ -12,6 +12,8 @@ public interface SolicitudNegocio {
 
     SolicitudDominio consultarUnaDelCiudadano(UUID ciudadanoId, UUID solicitudId);
 
+    SolicitudDominio consultarContactoDelTecnico(UUID ciudadanoId, UUID solicitudId);
+
     List<SolicitudDominio> consultarRecibidas(UUID usuarioTecnicoId);
 
     SolicitudDominio consultarUnaRecibida(UUID usuarioTecnicoId, UUID solicitudId);
@@ -21,4 +23,6 @@ public interface SolicitudNegocio {
     SolicitudDominio aceptar(UUID usuarioTecnicoId, UUID solicitudId);
 
     SolicitudDominio rechazar(UUID usuarioTecnicoId, UUID solicitudId, String motivoRechazo);
+
+    SolicitudDominio finalizar(UUID ciudadanoId, UUID solicitudId);
 }

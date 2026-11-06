@@ -37,6 +37,7 @@ class SolicitudNegocioImplTest {
     private static final UUID ID_PENDIENTE = UtilUUID.generar();
     private static final UUID ID_ACEPTADA = UtilUUID.generar();
     private static final UUID ID_RECHAZADA = UtilUUID.generar();
+    private static final UUID ID_FINALIZADA = UtilUUID.generar();
 
     // Guarda en memoria lo que se crea y responde las consultas filtrando por id y ciudadano
     private static final class SolicitudDAOEnMemoria implements SolicitudDAO {
@@ -171,6 +172,9 @@ class SolicitudNegocioImplTest {
                 }
                 if (EstadoSolicitudDominio.RECHAZADA.equals(filtro.getNombre())) {
                     return List.of(new EstadoSolicitudEntidad(ID_RECHAZADA, EstadoSolicitudDominio.RECHAZADA, true));
+                }
+                if (EstadoSolicitudDominio.FINALIZADA.equals(filtro.getNombre())) {
+                    return List.of(new EstadoSolicitudEntidad(ID_FINALIZADA, EstadoSolicitudDominio.FINALIZADA, true));
                 }
                 return List.of();
             }
@@ -398,5 +402,88 @@ class SolicitudNegocioImplTest {
         negocio.crear(UtilUUID.generar(), solicitudPara(ID_TECNICO).build());
         assertThrows(ManosALaObraExcepcion.class,
                 () -> negocio.consultarDelCiudadano(UtilUUID.obtenerUUIDDefecto()));
+    }
+
+    // HU-13: el ciudadano recibe el teléfono del técnico solo después de que el técnico acepte
+    @Test
+    void elCiudadanoNoVeElTelefonoDelTecnicoMientrasLaSolicitudEstaPendiente() {
+        UUID ciudadano = UtilUUID.generar();
+        SolicitudDominio solicitud = negocio.crear(ciudadano, solicitudPara(ID_TECNICO).build());
+        solicitudDAO.solicitudes.get(0).getTecnico().getUsuario().setNumeroTelefono("3109876543");
+
+        assertEquals("", negocio.consultarUnaDelCiudadano(ciudadano, solicitud.getId())
+                .getTecnico().getUsuario().getNumeroTelefono());
+        assertEquals("", negocio.consultarDelCiudadano(ciudadano).get(0)
+                .getTecnico().getUsuario().getNumeroTelefono());
+        ManosALaObraExcepcion excepcion = assertThrows(ManosALaObraExcepcion.class,
+                () -> negocio.consultarContactoDelTecnico(ciudadano, solicitud.getId()));
+        assertEquals("El técnico compartirá sus datos de contacto cuando acepte tu solicitud.",
+                excepcion.getMensajeUsuario());
+    }
+
+    @Test
+    void elCiudadanoRecibeElTelefonoDelTecnicoCuandoLaSolicitudFueAceptada() {
+        UUID ciudadano = UtilUUID.generar();
+        SolicitudDominio solicitud = negocio.crear(ciudadano, solicitudPara(ID_TECNICO).build());
+        solicitudDAO.solicitudes.get(0).getTecnico().getUsuario().setNumeroTelefono("3109876543");
+        negocio.aceptar(ID_USUARIO_TECNICO, solicitud.getId());
+
+        assertEquals("3109876543", negocio.consultarContactoDelTecnico(ciudadano, solicitud.getId())
+                .getTecnico().getUsuario().getNumeroTelefono());
+        assertEquals("3109876543", negocio.consultarUnaDelCiudadano(ciudadano, solicitud.getId())
+                .getTecnico().getUsuario().getNumeroTelefono());
+    }
+
+    @Test
+    void nuncaEntregaElContactoDelTecnicoDeUnaSolicitudRechazadaNiAjena() {
+        UUID ciudadano = UtilUUID.generar();
+        SolicitudDominio rechazada = negocio.crear(ciudadano, solicitudPara(ID_TECNICO).build());
+        negocio.rechazar(ID_USUARIO_TECNICO, rechazada.getId(), "OTRO");
+        assertThrows(ManosALaObraExcepcion.class,
+                () -> negocio.consultarContactoDelTecnico(ciudadano, rechazada.getId()));
+
+        SolicitudDominio aceptada = negocio.crear(ciudadano, solicitudPara(ID_TECNICO).build());
+        negocio.aceptar(ID_USUARIO_TECNICO, aceptada.getId());
+        ManosALaObraExcepcion excepcion = assertThrows(ManosALaObraExcepcion.class,
+                () -> negocio.consultarContactoDelTecnico(UtilUUID.generar(), aceptada.getId()));
+        assertEquals("No encontramos esa solicitud.", excepcion.getMensajeUsuario());
+    }
+
+    @Test
+    void elCiudadanoMarcaComoRealizadaUnaSolicitudAceptada() {
+        UUID ciudadano = UtilUUID.generar();
+        SolicitudDominio solicitud = negocio.crear(ciudadano, solicitudPara(ID_TECNICO).build());
+        negocio.aceptar(ID_USUARIO_TECNICO, solicitud.getId());
+
+        SolicitudDominio finalizada = negocio.finalizar(ciudadano, solicitud.getId());
+
+        assertEquals(EstadoSolicitudDominio.FINALIZADA, finalizada.getEstadoSolicitud().getNombre());
+        assertEquals(ID_FINALIZADA, solicitudDAO.solicitudes.get(0).getEstadoSolicitud().getId());
+    }
+
+    @Test
+    void noMarcaComoRealizadaUnaSolicitudPendienteNiYaFinalizada() {
+        UUID ciudadano = UtilUUID.generar();
+        SolicitudDominio solicitud = negocio.crear(ciudadano, solicitudPara(ID_TECNICO).build());
+        ManosALaObraExcepcion excepcion = assertThrows(ManosALaObraExcepcion.class,
+                () -> negocio.finalizar(ciudadano, solicitud.getId()));
+        assertEquals("Solo puedes marcar como realizado un servicio que el técnico ya aceptó.",
+                excepcion.getMensajeUsuario());
+
+        negocio.aceptar(ID_USUARIO_TECNICO, solicitud.getId());
+        negocio.finalizar(ciudadano, solicitud.getId());
+        assertThrows(ManosALaObraExcepcion.class, () -> negocio.finalizar(ciudadano, solicitud.getId()));
+    }
+
+    @Test
+    void noMarcaComoRealizadaUnaSolicitudDeOtroCiudadano() {
+        UUID ciudadano = UtilUUID.generar();
+        SolicitudDominio solicitud = negocio.crear(ciudadano, solicitudPara(ID_TECNICO).build());
+        negocio.aceptar(ID_USUARIO_TECNICO, solicitud.getId());
+
+        ManosALaObraExcepcion excepcion = assertThrows(ManosALaObraExcepcion.class,
+                () -> negocio.finalizar(UtilUUID.generar(), solicitud.getId()));
+        assertEquals("No encontramos esa solicitud.", excepcion.getMensajeUsuario());
+        assertEquals(EstadoSolicitudDominio.ACEPTADA, solicitudDAO.solicitudes.get(0).getEstadoSolicitud().getNombre());
     }
 }
