@@ -12,6 +12,7 @@ public final class CalificacionDominio {
     private final int estrellas;
     private final String comentario;
     private final boolean visible;
+    private final String motivoModeracion;
 
     private CalificacionDominio(Builder builder) {
         this.id = builder.id;
@@ -19,6 +20,7 @@ public final class CalificacionDominio {
         this.estrellas = builder.estrellas;
         this.comentario = builder.comentario;
         this.visible = builder.visible;
+        this.motivoModeracion = builder.motivoModeracion;
     }
 
     public UUID getId() {
@@ -41,12 +43,17 @@ public final class CalificacionDominio {
         return visible;
     }
 
+    public String getMotivoModeracion() {
+        return motivoModeracion;
+    }
+
     public static class Builder {
         private UUID id;
         private SolicitudDominio solicitud;
         private int estrellas;
         private String comentario;
         private boolean visible;
+        private String motivoModeracion = UtilTexto.VACIO;
 
         public Builder() {
             id = UtilUUID.obtenerUUIDDefecto();
@@ -78,6 +85,11 @@ public final class CalificacionDominio {
 
         public Builder visible(boolean visible) {
             this.visible = visible;
+            return this;
+        }
+
+        public Builder motivoModeracion(String motivoModeracion) {
+            this.motivoModeracion = UtilTexto.getUtilTexto().quitarEspacioEnBlanco(motivoModeracion);
             return this;
         }
 

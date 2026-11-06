@@ -13,6 +13,7 @@ public final class CalificacionDTO {
     private int estrellas;
     private String comentario;
     private boolean visible;
+    private String motivoModeracion = UtilTexto.VACIO;
 
     public CalificacionDTO() {
         setId(UtilUUID.obtenerUUIDDefecto());
@@ -60,5 +61,13 @@ public final class CalificacionDTO {
 
     public void setVisible(boolean visible) {
         this.visible = visible;
+    }
+
+    public String getMotivoModeracion() {
+        return motivoModeracion;
+    }
+
+    public void setMotivoModeracion(String motivoModeracion) {
+        this.motivoModeracion = UtilTexto.getUtilTexto().quitarEspacioEnBlanco(motivoModeracion);
     }
 }

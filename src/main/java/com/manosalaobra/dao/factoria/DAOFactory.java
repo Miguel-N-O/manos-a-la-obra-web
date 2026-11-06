@@ -1,6 +1,7 @@
 package com.manosalaobra.dao.factoria;
 
 import com.manosalaobra.dao.datos.entidad.BarrioDAO;
+import com.manosalaobra.dao.datos.entidad.CalificacionDAO;
 import com.manosalaobra.dao.datos.entidad.IndicativoPaisDAO;
 import com.manosalaobra.dao.datos.entidad.EstadoSolicitudDAO;
 import com.manosalaobra.dao.datos.entidad.ServicioDAO;
@@ -83,4 +84,6 @@ public abstract class DAOFactory {
     public abstract EstadoSolicitudDAO obtenerEstadoSolicitudDAO();
 
     public abstract SolicitudDAO obtenerSolicitudDAO();
+
+    public abstract CalificacionDAO obtenerCalificacionDAO();
 }
