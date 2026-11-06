@@ -31,6 +31,7 @@ public final class UsuarioEnsambladorDTO implements EnsambladorDTO<UsuarioDomini
         dto.setCorreo(dominioSeguro.getCorreo());
         dto.setIndicativoPais(IndicativoPaisEnsambladorDTO.getInstancia().convertirADTO(dominioSeguro.getIndicativoPais()));
         dto.setNumeroTelefono(dominioSeguro.getNumeroTelefono());
+        dto.setMotivoEstado(dominioSeguro.getMotivoEstado());
         return dto;
     }
 
@@ -46,6 +47,7 @@ public final class UsuarioEnsambladorDTO implements EnsambladorDTO<UsuarioDomini
                 .clave(dtoSeguro.getClave())
                 .indicativoPais(IndicativoPaisEnsambladorDTO.getInstancia().convertirADominio(dtoSeguro.getIndicativoPais()))
                 .numeroTelefono(dtoSeguro.getNumeroTelefono())
+                .motivoEstado(dtoSeguro.getMotivoEstado())
                 .build();
     }
 

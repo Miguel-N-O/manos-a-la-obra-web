@@ -23,14 +23,19 @@ import com.manosalaobra.negocio.negocio.reglas.impl.tecnico.AsegurarDocumentoNoR
 import com.manosalaobra.negocio.negocio.reglas.impl.tecnico.ValidarDatosRegistrarNuevoTecnicoRegla;
 import com.manosalaobra.negocio.negocio.reglas.impl.usuario.AsegurarCorreoNoRegistradoRegla;
 import com.manosalaobra.negocio.negocio.reglas.impl.usuario.AsegurarCredencialesValidasRegla;
+import com.manosalaobra.negocio.negocio.reglas.impl.usuario.AsegurarUsuarioAdministrableRegla;
 import com.manosalaobra.negocio.negocio.reglas.impl.usuario.ValidarDatosIniciarSesionRegla;
 import com.manosalaobra.negocio.negocio.reglas.impl.usuario.ValidarDatosRegistrarNuevoUsuarioRegla;
+import com.manosalaobra.negocio.negocio.reglas.impl.usuario.ValidarEstadoUsuarioRegla;
 import com.manosalaobra.transversal.catalogo.CatalogoMensajes;
 import com.manosalaobra.transversal.excepciones.ManosALaObraNegocioExcepcion;
 import com.manosalaobra.transversal.utilitarios.Claves;
+import com.manosalaobra.transversal.utilitarios.UtilTexto;
 import com.manosalaobra.transversal.utilitarios.UtilUUID;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public final class UsuarioNegocioImpl implements UsuarioNegocio {
 
@@ -79,6 +84,56 @@ public final class UsuarioNegocioImpl implements UsuarioNegocio {
 
         AsegurarCredencialesValidasRegla.obtenerInstancia().ejecutar(usuario, credenciales.getClave());
         return UsuarioEnsambladorEntidad.getInstancia().convertirADominio(usuario);
+    }
+
+    // HU-16: el administrador consulta todas las cuentas (el hash de la clave no sale de la fachada)
+    @Override
+    public List<UsuarioDominio> consultarTodos() {
+        List<UsuarioDominio> usuarios = new ArrayList<>();
+        for (UsuarioEntidad entidad : daoFactory.obtenerUsuarioDAO().consultarTodos()) {
+            usuarios.add(UsuarioEnsambladorEntidad.getInstancia().convertirADominio(entidad));
+        }
+        return usuarios;
+    }
+
+    // HU-16: buscar por nombre o correo (texto) y filtrar por rol y estado; los filtros vacíos no filtran
+    @Override
+    public List<UsuarioDominio> consultarTodos(String texto, String rol, String estado) {
+        String buscado = UtilTexto.getUtilTexto().quitarEspacioEnBlanco(texto).toLowerCase();
+        String rolBuscado = UtilTexto.getUtilTexto().quitarEspacioEnBlanco(rol);
+        String estadoBuscado = UtilTexto.getUtilTexto().quitarEspacioEnBlanco(estado);
+        List<UsuarioDominio> filtrados = new ArrayList<>();
+        for (UsuarioDominio usuario : consultarTodos()) {
+            boolean coincideTexto = buscado.isEmpty()
+                    || usuario.getNombre().toLowerCase().contains(buscado)
+                    || usuario.getCorreo().toLowerCase().contains(buscado);
+            boolean coincideRol = rolBuscado.isEmpty() || rolBuscado.equalsIgnoreCase(usuario.getRol().getNombre());
+            boolean coincideEstado = estadoBuscado.isEmpty()
+                    || estadoBuscado.equalsIgnoreCase(usuario.getEstadoUsuario().getNombre());
+            if (coincideTexto && coincideRol && coincideEstado) {
+                filtrados.add(usuario);
+            }
+        }
+        return filtrados;
+    }
+
+    // HU-16: suspender, bloquear (con motivo) o reactivar una cuenta que no sea la propia ni la de otro administrador
+    @Override
+    public UsuarioDominio cambiarEstado(UUID administradorId, UUID usuarioId, String nombreEstado, String motivo) {
+        ValidarEstadoUsuarioRegla.obtenerInstancia().ejecutar(nombreEstado, motivo);
+        // Sin esta guarda el DAO traería la primera cuenta cuando no llega el id
+        UsuarioEntidad usuario = UtilUUID.esValorDefecto(usuarioId)
+                ? new UsuarioEntidad() : daoFactory.obtenerUsuarioDAO().consultarPorId(usuarioId);
+        AsegurarUsuarioAdministrableRegla.obtenerInstancia().ejecutar(usuario, administradorId);
+
+        UsuarioEntidad cambio = new UsuarioEntidad();
+        cambio.setEstadoUsuario(EstadoUsuarioEnsambladorEntidad.getInstancia()
+                .convertirAEntidad(consultarEstadoUsuarioPorNombre(nombreEstado)));
+        // Al reactivar la cuenta el motivo anterior se borra
+        cambio.setMotivoEstado(EstadoUsuarioDominio.ACTIVO.equals(nombreEstado) ? UtilTexto.VACIO : motivo);
+        daoFactory.obtenerUsuarioDAO().actualizar(usuarioId, cambio);
+        return UsuarioEnsambladorEntidad.getInstancia().convertirADominio(
+                daoFactory.obtenerUsuarioDAO().consultarPorId(usuarioId));
     }
 
     private UsuarioDominio crearUsuario(UsuarioDominio usuario, String nombreRol) {

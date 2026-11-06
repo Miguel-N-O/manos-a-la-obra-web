@@ -16,6 +16,7 @@ public final class UsuarioDTO {
     private String clave;
     private IndicativoPaisDTO indicativoPais;
     private String numeroTelefono;
+    private String motivoEstado = UtilTexto.VACIO;
 
     public UsuarioDTO() {
         setId(UtilUUID.obtenerUUIDDefecto());
@@ -90,5 +91,13 @@ public final class UsuarioDTO {
 
     public void setNumeroTelefono(String numeroTelefono) {
         this.numeroTelefono = UtilTexto.getUtilTexto().quitarEspacioEnBlanco(numeroTelefono);
+    }
+
+    public String getMotivoEstado() {
+        return motivoEstado;
+    }
+
+    public void setMotivoEstado(String motivoEstado) {
+        this.motivoEstado = UtilTexto.getUtilTexto().quitarEspacioEnBlanco(motivoEstado);
     }
 }

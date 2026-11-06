@@ -14,6 +14,9 @@ import com.manosalaobra.transversal.catalogo.CatalogoMensajes;
 import com.manosalaobra.transversal.excepciones.ManosALaObraExcepcion;
 import com.manosalaobra.transversal.excepciones.ManosALaObraFachadaExcepcion;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,6 +98,59 @@ public final class UsuarioFachadaImpl implements UsuarioFachada {
             REGISTRO.error("Problema inesperado iniciando sesión", excepcion);
             throw ManosALaObraFachadaExcepcion.crear(
                     CatalogoMensajes.UsuarioFachadaImpl.USUARIO_ERROR_PROBLEMA_INESPERADO_INICIANDO_SESION,
+                    excepcion.getMessage(), excepcion);
+        } finally {
+            daoFactory.cerrarConexion();
+        }
+    }
+
+    @Override
+    public List<UsuarioDTO> consultarTodos() {
+        return consultarTodos(null, null, null);
+    }
+
+    @Override
+    public List<UsuarioDTO> consultarTodos(String texto, String rol, String estado) {
+        try {
+            List<UsuarioDTO> usuarios = new ArrayList<>();
+            for (UsuarioDominio usuario : usuarioNegocio.consultarTodos(texto, rol, estado)) {
+                usuarios.add(UsuarioEnsambladorDTO.getInstancia().convertirADTO(usuario));
+            }
+            return usuarios;
+        } catch (ManosALaObraExcepcion excepcion) {
+            throw excepcion;
+        } catch (Exception excepcion) {
+            REGISTRO.error("Problema inesperado consultando las cuentas", excepcion);
+            throw ManosALaObraFachadaExcepcion.crear(
+                    CatalogoMensajes.UsuarioFachadaImpl.USUARIO_ERROR_PROBLEMA_INESPERADO_CONSULTANDO_USUARIOS,
+                    excepcion.getMessage(), excepcion);
+        } finally {
+            daoFactory.cerrarConexion();
+        }
+    }
+
+    @Override
+    public UsuarioDTO cambiarEstado(UUID administradorId, UUID usuarioId, UsuarioDTO cambio) {
+        boolean transaccionIniciada = false;
+        try {
+            daoFactory.iniciarTransaccion();
+            transaccionIniciada = true;
+
+            UsuarioDominio pedido = UsuarioEnsambladorDTO.getInstancia().convertirADominio(cambio);
+            UsuarioDominio actualizado = usuarioNegocio.cambiarEstado(administradorId, usuarioId,
+                    pedido.getEstadoUsuario().getNombre(), pedido.getMotivoEstado());
+
+            daoFactory.confirmarTransaccion();
+            transaccionIniciada = false;
+            return UsuarioEnsambladorDTO.getInstancia().convertirADTO(actualizado);
+        } catch (ManosALaObraExcepcion excepcion) {
+            cancelarSiHaceFalta(transaccionIniciada);
+            throw excepcion;
+        } catch (Exception excepcion) {
+            cancelarSiHaceFalta(transaccionIniciada);
+            REGISTRO.error("Problema inesperado cambiando el estado de una cuenta", excepcion);
+            throw ManosALaObraFachadaExcepcion.crear(
+                    CatalogoMensajes.UsuarioFachadaImpl.USUARIO_ERROR_PROBLEMA_INESPERADO_CAMBIANDO_ESTADO,
                     excepcion.getMessage(), excepcion);
         } finally {
             daoFactory.cerrarConexion();
